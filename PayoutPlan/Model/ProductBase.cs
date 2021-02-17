@@ -25,14 +25,14 @@ namespace PayoutPlan.Model
         private const int ANNUAL_TRESHOLD = 90;
 
         protected readonly ProductBase _productBase;
-        protected readonly IMonitorHandler _rebalancerHandler;
+        protected readonly IMonitorHandler _monitorHandler;
         protected readonly IDateTimeNow _dateTime;
         protected IModelPortfolio _modelPortfolio => _productBase.ModelPortfolio;
 
         public RebalancerBase(ProductBase productBase, IMonitorHandler rebalancerHandler, IDateTimeNow dateTime)
         {
             _productBase = productBase;
-            _rebalancerHandler = rebalancerHandler;
+            _monitorHandler = rebalancerHandler;
             _dateTime = dateTime;
         }
 
@@ -41,7 +41,7 @@ namespace PayoutPlan.Model
         public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive <= ANNUAL_TRESHOLD && _dateTime.Now.IsLastDayInYear();
         public void Rebalance()
         {
-            _rebalancerHandler.Monitor(this);
+            _monitorHandler.Monitor(this);
         }
     }
 
