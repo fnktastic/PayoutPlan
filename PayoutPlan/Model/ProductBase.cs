@@ -1,4 +1,5 @@
 ﻿using PayoutPlan.Extensions;
+using PayoutPlan.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +22,14 @@ namespace PayoutPlan.Model
 
     public abstract class RebalancerBase : IRebalanceable
     {
+        private const int ANNUAL_TRESHOLD = 90;
+
         protected readonly ProductBase _productBase;
-        protected readonly IRebalancerHandler _rebalancerHandler;
+        protected readonly IMonitorHandler _rebalancerHandler;
         protected readonly IDateTimeNow _dateTime;
         protected IModelPortfolio _modelPortfolio => _productBase.ModelPortfolio;
 
-        public RebalancerBase(ProductBase productBase, IRebalancerHandler rebalancerHandler, IDateTimeNow dateTime)
+        public RebalancerBase(ProductBase productBase, IMonitorHandler rebalancerHandler, IDateTimeNow dateTime)
         {
             _productBase = productBase;
             _rebalancerHandler = rebalancerHandler;
@@ -35,16 +38,16 @@ namespace PayoutPlan.Model
 
         public abstract bool IsFlexibleAllocationRebalancing { get; }
         public abstract bool IsFinalRebalancing { get; }
-        public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive <= 90;
+        public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive <= ANNUAL_TRESHOLD && _dateTime.Now.IsLastDayInYear();
         public void Rebalance()
         {
-            _rebalancerHandler.Rebalance(this);
+            _rebalancerHandler.Monitor(this);
         }
     }
 
     public class InvestmentRebalancer : RebalancerBase
     {
-        public InvestmentRebalancer(ProductBase productBase, IRebalancerHandler rebalancerHandler, IDateTimeNow now) : base(productBase, rebalancerHandler, now)
+        public InvestmentRebalancer(ProductBase productBase, IMonitorHandler rebalancerHandler, IDateTimeNow now) : base(productBase, rebalancerHandler, now)
         {
 
         }
@@ -56,18 +59,19 @@ namespace PayoutPlan.Model
 
     public class PayoutRebalancer : RebalancerBase
     {
-        public PayoutRebalancer(ProductBase productBase, IRebalancerHandler rebalancerHandler, IDateTimeNow now) : base(productBase, rebalancerHandler, now)
+        public PayoutRebalancer(ProductBase productBase, IMonitorHandler rebalancerHandler, IDateTimeNow now) : base(productBase, rebalancerHandler, now)
         {
 
         }
 
-        public override bool IsFlexibleAllocationRebalancing => _dateTime.Now.IsLastTuesday() && _modelPortfolio.Dynamic >= _modelPortfolio.RebalancingTreshold;
+        public override bool IsFlexibleAllocationRebalancing => _dateTime.Now.IsLastTuesdayInMonth() && _modelPortfolio.Dynamic >= _modelPortfolio.RebalancingTreshold;
 
         public override bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod;
     }
 
     public interface IModelPortfolio
     {
+        RiskCategory RiskCategory { get; set; }
         int RebalancingTreshold { get; set; }
         int Defensive { get; set; }
         int Dynamic { get; set; }
@@ -75,7 +79,20 @@ namespace PayoutPlan.Model
 
     public class ModelPortfolio : IModelPortfolio
     {
-        public string RiskCategory { get; set; }
+        public ModelPortfolio()
+        {
+
+        }
+
+        public ModelPortfolio(RiskCategory riskCategory, int rebalancingTreshold, int defensive, int dynamic)
+        {
+            RiskCategory = riskCategory;
+            RebalancingTreshold = rebalancingTreshold;
+            Defensive = defensive;
+            Dynamic = dynamic;
+        }
+
+        public RiskCategory RiskCategory { get; set; }
         public int RebalancingTreshold { get; set; }
         public int Defensive { get; set; }
         public int Dynamic { get; set; }
@@ -83,19 +100,26 @@ namespace PayoutPlan.Model
 
     public interface IWithdrawal
     {
-        void Withdraw(double amount);
+        void Withdraw(double? amount);
     }
 
-    public class InvestmentProduct : ProductBase
+    public class InvestmentProduct : ProductBase, IWithdrawal
     {
-        public InvestmentProduct(ModelPortfolio modelPortfolio, bool finalDerisking, bool annualDerisking, double investment, IDateTimeNow dateTimeNow) : base(dateTimeNow)
+        public InvestmentProduct(IModelPortfolio modelPortfolio, bool finalDerisking, bool annualDerisking, double investment, IDateTimeNow dateTimeNow) : base(dateTimeNow)
         {
             ModelPortfolio = modelPortfolio;
             Investment = investment;
             Balance = investment;
             FinalDerisking = finalDerisking;
             AnnualDerisking = annualDerisking;
-            ProductId = 8;
+            ProductType = ProductType.Investment;
+        }
+
+        public void Withdraw(double? amount)
+        {
+            if (amount.HasValue == false) return;
+
+            this.Balance -= amount.Value;
         }
     }
 
@@ -103,17 +127,17 @@ namespace PayoutPlan.Model
     {
         public PayoutFreequency PayoutFreequency { get; set; }
         public double Payout { get; set; }
-        public PayoutProduct(ModelPortfolio modelPortfolio, bool annualDerisking, double investment, IDateTimeNow dateTimeNow): base(dateTimeNow)
+        public PayoutProduct(IModelPortfolio modelPortfolio, bool annualDerisking, double investment, IDateTimeNow dateTimeNow) : base(dateTimeNow)
         {
             ModelPortfolio = modelPortfolio;
             Investment = investment;
             Balance = investment;
             AnnualDerisking = annualDerisking;
-            ProductId = 9;
+            ProductType = ProductType.Payout;
             FinalDerisking = true;
         }
 
-        public void Withdraw(double amount)
+        public void Withdraw(double? amount)
         {
             this.Balance -= this.Payout;
         }
@@ -128,7 +152,7 @@ namespace PayoutPlan.Model
             _dateTimeNow = dateTimeNow;
         }
 
-        public int ProductId { get; protected set; }
+        public ProductType ProductType { get; protected set; }
         protected double Investment { get; set; }
         public bool FinalDerisking { get; protected set; }
         public bool AnnualDerisking { get; protected set; }
@@ -136,7 +160,7 @@ namespace PayoutPlan.Model
         public int InvestmentLength { get; set; }
         public DateTime Created { get; protected set; }
         public IModelPortfolio ModelPortfolio { get; protected set; }
-        public int InvestmentYear =>_dateTimeNow.Now.Year - Created.Year;
+        public int InvestmentYear => _dateTimeNow.Now.Year - Created.Year;
         public bool LastTwoYearsPeriod => (InvestmentLength - InvestmentYear) <= 2 ? true : false;
     }
 
@@ -147,14 +171,29 @@ namespace PayoutPlan.Model
         Month = 2
     }
 
-    public interface IRebalancerHandler
+    public enum ProductType
     {
-        void Rebalance(RebalancerBase productBase);
+        Investment = 9,
+        Payout = 8
     }
 
-    public class RebalancerHandler : IRebalancerHandler
+    public enum RiskCategory
     {
-        public void Rebalance(RebalancerBase productBase)
+        Security,
+        Income,
+        Balance,
+        Growth,
+        ActionOriented
+    }
+
+    public interface IMonitorHandler
+    {
+        void Monitor(RebalancerBase productBase);
+    }
+
+    public class MonitorHandler : IMonitorHandler
+    {
+        public void Monitor(RebalancerBase productBase)
         {
             if (productBase.IsAnnualRebalancing)
             {
@@ -186,6 +225,11 @@ namespace PayoutPlan.Model
             _now = _now.AddYears(1);
         }
 
+        public void AddDay()
+        {
+            _now = _now.AddDays(1);
+        }
+
         public DateTime Now => _now;
     }
 
@@ -195,35 +239,28 @@ namespace PayoutPlan.Model
         {
             var dateTimeNow = new DateTimeNow();
 
-            for (int i = 0; i < 20; i++)
+            var modelPortfolioRepository = new ModelPortfolioRepository();
+
+            var modelPortfolio = modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Growth);
+
+            var rebalancerHandler = new MonitorHandler();
+
+            var payoutProduct = new PayoutProduct(modelPortfolio, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
             {
-                if (i == 19)
-                {
+                PayoutFreequency = PayoutFreequency.Quarter,
+                Payout = 10_000.0D,
+                InvestmentLength = 10,
+            };
 
-                }
+            var investmentProduct = new InvestmentProduct(modelPortfolio, finalDerisking: true, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
+            {
+                InvestmentLength = 20
+            };
 
-                var modelPortfolio = new ModelPortfolio()
-                {
-                    Defensive = 55,
-                    Dynamic = 45,
-                    RebalancingTreshold = 55,
-                    RiskCategory = "Balance",
-                };
+            var endOfProductLife = dateTimeNow.Now.AddYears(20);
 
-                var rebalancerHandler = new RebalancerHandler();
-
-                var payoutProduct = new PayoutProduct(modelPortfolio, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
-                {
-                    PayoutFreequency = PayoutFreequency.Quarter,
-                    Payout = 10_000.0D,
-                    InvestmentLength = 10,
-                };
-
-                var investmentProduct = new InvestmentProduct(modelPortfolio, finalDerisking: true, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
-                {
-                    InvestmentLength = 20
-                };
-
+            while (dateTimeNow.Now < endOfProductLife)
+            {
                 var payoutRebalancer = new PayoutRebalancer(payoutProduct, rebalancerHandler, dateTimeNow);
 
                 var investmentRebalancer = new InvestmentRebalancer(investmentProduct, rebalancerHandler, dateTimeNow);
@@ -232,7 +269,7 @@ namespace PayoutPlan.Model
 
                 payoutRebalancer.Rebalance();
 
-                dateTimeNow.AddYear();
+                dateTimeNow.AddDay();
             }
         }
     }
