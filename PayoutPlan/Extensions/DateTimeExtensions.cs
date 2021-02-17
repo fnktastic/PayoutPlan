@@ -24,5 +24,40 @@ namespace PayoutPlan.Extensions
 
             return false;
         }
+
+        public static bool IsMonthDay(this DateTime dateTime, DateTime now)
+        {
+            if (dateTime.Day == now.Day) return true;
+
+            return false;
+        }
+
+        public static bool IsQuarterDay(this DateTime dateTime, DateTime now)
+        {
+            if (dateTime.Day == now.Day)
+            {
+                if (now.Month == 3 ||
+                    now.Month == 6 ||
+                    now.Month == 9 ||
+                    now.Month == 12) 
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsYearDay(this DateTime dateTime, DateTime now)
+        {
+            if (dateTime.Month == now.Month && dateTime.Day == now.Day) return true;
+
+            return false;
+        }
+
+        public static bool IsDateAs(this DateTime dateTime, DateTime now)
+        {
+            if (dateTime.Year == now.Year && dateTime.Month == now.Month && dateTime.Day == now.Day) return true;
+
+            return false;
+        }
     }
 }

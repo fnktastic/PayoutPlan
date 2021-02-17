@@ -36,9 +36,10 @@ namespace PayoutPlan.Repository
         {
             switch(productType)
             {
-                case ProductType.Investment: return _investmentPortfolios;
-                case ProductType.Payout: return _payoutPortfolios;
-                default: return _investmentPortfolios;
+                case ProductType.Payout: 
+                    return _payoutPortfolios;
+                default: 
+                    return _investmentPortfolios;
             }
         }
 
@@ -46,9 +47,10 @@ namespace PayoutPlan.Repository
         {
             switch (productType)
             {
-                case ProductType.Investment: return _investmentPortfolios.Find(x => x.RiskCategory == riskCategory);
-                case ProductType.Payout: return _payoutPortfolios.Find(x => x.RiskCategory == riskCategory); ;
-                default: return _investmentPortfolios.Find(x => x.RiskCategory == riskCategory);
+                case ProductType.Payout: 
+                    return _payoutPortfolios.Find(x => x.RiskCategory == riskCategory);
+                default: 
+                    return _investmentPortfolios.Find(x => x.RiskCategory == riskCategory);
             }
         }
     }
