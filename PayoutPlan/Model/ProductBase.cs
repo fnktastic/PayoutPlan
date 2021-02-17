@@ -16,6 +16,8 @@ namespace PayoutPlan.Model
 
     public interface IDateTimeNow
     {
+        void AddYear();
+        void AddDay();
         DateTime Now { get; }
     }
 
@@ -25,14 +27,14 @@ namespace PayoutPlan.Model
         private const int ANNUAL_TRESHOLD = 90;
 
         protected readonly ProductBase _productBase;
-        protected readonly IMonitorHandler _monitorHandler;
+        protected readonly IRebalancerHandler _rebalancerHandler;
         protected readonly IDateTimeNow _dateTime;
         protected IModelPortfolio _modelPortfolio => _productBase.ModelPortfolio;
 
-        public RebalancerBase(ProductBase productBase, IMonitorHandler rebalancerHandler, IDateTimeNow dateTime)
+        public RebalancerBase(ProductBase productBase, IRebalancerHandler rebalancerHandler, IDateTimeNow dateTime)
         {
             _productBase = productBase;
-            _monitorHandler = rebalancerHandler;
+            _rebalancerHandler = rebalancerHandler;
             _dateTime = dateTime;
         }
 
@@ -41,13 +43,13 @@ namespace PayoutPlan.Model
         public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive <= ANNUAL_TRESHOLD && _dateTime.Now.IsLastDayInYear();
         public void Rebalance()
         {
-            _monitorHandler.Monitor(this);
+            _rebalancerHandler.Rebalance(this);
         }
     }
 
     public class InvestmentRebalancer : RebalancerBase
     {
-        public InvestmentRebalancer(ProductBase productBase, IMonitorHandler rebalancerHandler, IDateTimeNow now) : base(productBase, rebalancerHandler, now)
+        public InvestmentRebalancer(ProductBase productBase, IRebalancerHandler rebalancerHandler, IDateTimeNow now) : base(productBase, rebalancerHandler, now)
         {
 
         }
@@ -59,7 +61,7 @@ namespace PayoutPlan.Model
 
     public class PayoutRebalancer : RebalancerBase
     {
-        public PayoutRebalancer(ProductBase productBase, IMonitorHandler rebalancerHandler, IDateTimeNow now) : base(productBase, rebalancerHandler, now)
+        public PayoutRebalancer(ProductBase productBase, IRebalancerHandler rebalancerHandler, IDateTimeNow now) : base(productBase, rebalancerHandler, now)
         {
 
         }
@@ -186,29 +188,55 @@ namespace PayoutPlan.Model
         ActionOriented
     }
 
+    public interface IWithdrawalHandler
+    {
+        void Withdraw();
+    }
+
+    public interface IRebalancerHandler
+    {
+        void Rebalance(RebalancerBase productBase);
+    }
+
+    public class RebalancerHandler : IRebalancerHandler
+    {
+        public void Rebalance(RebalancerBase rebalancerBase)
+        {
+            if (rebalancerBase.IsAnnualRebalancing)
+            {
+
+            }
+
+            if (rebalancerBase.IsFinalRebalancing)
+            {
+
+            }
+
+            if (rebalancerBase.IsFlexibleAllocationRebalancing)
+            {
+
+            }
+        }
+    }
+
     public interface IMonitorHandler
     {
-        void Monitor(RebalancerBase productBase);
+        void Monitor(ProductBase productBase);
     }
 
     public class MonitorHandler : IMonitorHandler
     {
-        public void Monitor(RebalancerBase productBase)
+        private readonly IRebalancerFactory _rebalancerFactory;
+        public MonitorHandler(IRebalancerFactory rebalancerFactory)
         {
-            if (productBase.IsAnnualRebalancing)
-            {
+            _rebalancerFactory = rebalancerFactory;
+        }
 
-            }
+        public void Monitor(ProductBase productBase)
+        {
+            var rebalancer = _rebalancerFactory.Instance(productBase);
 
-            if (productBase.IsFinalRebalancing)
-            {
-
-            }
-
-            if (productBase.IsFlexibleAllocationRebalancing)
-            {
-
-            }
+            rebalancer.Rebalance();
         }
     }
 
@@ -233,17 +261,46 @@ namespace PayoutPlan.Model
         public DateTime Now => _now;
     }
 
+    public interface IRebalancerFactory
+    {
+        RebalancerBase Instance(ProductBase productBase);
+    }
+
+    public class RebalancerFactory : IRebalancerFactory
+    {
+        private readonly IRebalancerHandler _rebalancerHandler;
+
+        private readonly IDateTimeNow _dateTimeNow;
+
+        public RebalancerFactory(IDateTimeNow dateTimeNow, IRebalancerHandler rebalancerHandler)
+        {
+            _dateTimeNow = dateTimeNow;
+            _rebalancerHandler = rebalancerHandler;
+        }
+
+        public RebalancerBase Instance(ProductBase productBase)
+        {
+            switch(productBase.ProductType)
+            {
+                case ProductType.Investment: return new InvestmentRebalancer(productBase, _rebalancerHandler, _dateTimeNow);
+                case ProductType.Payout: return new PayoutRebalancer(productBase, _rebalancerHandler, _dateTimeNow);
+                default: return new InvestmentRebalancer(productBase, _rebalancerHandler, _dateTimeNow);
+            }
+        }
+    }
+
     public static class Imitator
     {
+        static IDateTimeNow dateTimeNow = new DateTimeNow();
+
+        static IModelPortfolioRepository modelPortfolioRepository = new ModelPortfolioRepository();
+        static IRebalancerHandler rebalancerHandler = new RebalancerHandler();
+        static IRebalancerFactory rebalancerFactory = new RebalancerFactory(dateTimeNow, rebalancerHandler);
+        static IMonitorHandler monitorHandler = new MonitorHandler(rebalancerFactory);
+
         public static void DailyRun()
         {
-            var dateTimeNow = new DateTimeNow();
-
-            var modelPortfolioRepository = new ModelPortfolioRepository();
-
             var modelPortfolio = modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Growth);
-
-            var rebalancerHandler = new MonitorHandler();
 
             var payoutProduct = new PayoutProduct(modelPortfolio, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
             {
@@ -261,13 +318,8 @@ namespace PayoutPlan.Model
 
             while (dateTimeNow.Now < endOfProductLife)
             {
-                var payoutRebalancer = new PayoutRebalancer(payoutProduct, rebalancerHandler, dateTimeNow);
-
-                var investmentRebalancer = new InvestmentRebalancer(investmentProduct, rebalancerHandler, dateTimeNow);
-
-                investmentRebalancer.Rebalance();
-
-                payoutRebalancer.Rebalance();
+                monitorHandler.Monitor(payoutProduct);
+                monitorHandler.Monitor(investmentProduct);
 
                 dateTimeNow.AddDay();
             }
