@@ -26,7 +26,7 @@ namespace PayoutPlan.Model
 
     public abstract class MonitorBase
     {
-        private const int ANNUAL_REBALANCING_STOP_TRESHOLD = 90;
+        private const int ANNUAL_REBALANCING_DEFENSIVE_TRESHOLD = 90;
 
         protected readonly ProductBase _productBase;
         protected readonly IRebalancerHandler _rebalancerHandler;
@@ -55,7 +55,7 @@ namespace PayoutPlan.Model
         public abstract bool IsFinalRebalancing { get; }
         public abstract bool IsPayout { get; }
         public ProductBase ProductBase => _productBase;
-        public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive <= ANNUAL_REBALANCING_STOP_TRESHOLD && _dateTime.Now.IsLastDayInYear();
+        public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive < ANNUAL_REBALANCING_DEFENSIVE_TRESHOLD && _dateTime.Now.IsLastDayInYear();
         public void Invoke()
         {
             Rebalance();
@@ -72,7 +72,7 @@ namespace PayoutPlan.Model
 
         public override bool IsFlexibleAllocationRebalancing => false;
 
-        public override bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod && _productBase.FinalDerisking;
+        public override bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod && _productBase.FinalDerisking && _dateTime.Now.IsLastTuesdayInMonth();
 
         public override bool IsPayout => false;
     }
@@ -87,8 +87,9 @@ namespace PayoutPlan.Model
         }
 
         public override bool IsFlexibleAllocationRebalancing => _dateTime.Now.IsLastTuesdayInMonth() && _modelPortfolio.Dynamic >= _modelPortfolio.RebalancingTreshold;
-
-        public override bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod;
+        
+        public override bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod && _dateTime.Now.IsLastTuesdayInMonth();
+        
         public override bool IsPayout => _payoutHelper.IsTodayPayoutDate((PayoutProduct)_productBase, _dateTime);
     }
 
@@ -185,7 +186,7 @@ namespace PayoutPlan.Model
         public IModelPortfolio ModelPortfolio { get; protected set; }
         public int InvestmentYear => _dateTimeNow.Now.Year - Created.Year;
         public bool LastTwoYearsPeriod => (InvestmentLength - InvestmentYear) <= 2 ? true : false;
-        public abstract void Withdraw(double? amount);
+        public abstract void Withdraw(double? amount = null);
     }
 
     public enum PayoutFreequency
@@ -222,7 +223,7 @@ namespace PayoutPlan.Model
             //withdrawal and payout logic
             if(monitorBase.IsPayout)
             {
-
+                monitorBase.ProductBase.Withdraw();
             }
         }
     }
@@ -239,17 +240,20 @@ namespace PayoutPlan.Model
             //rebalance logic
             if (rebalancerBase.IsAnnualRebalancing)
             {
-
+                rebalancerBase.ProductBase.ModelPortfolio.Defensive++;
+                rebalancerBase.ProductBase.ModelPortfolio.Dynamic--;
             }
 
             if (rebalancerBase.IsFinalRebalancing)
             {
-
+                rebalancerBase.ProductBase.ModelPortfolio.Defensive++;
+                rebalancerBase.ProductBase.ModelPortfolio.Dynamic--;
             }
 
             if (rebalancerBase.IsFlexibleAllocationRebalancing)
             {
-
+                rebalancerBase.ProductBase.ModelPortfolio.Defensive++;
+                rebalancerBase.ProductBase.ModelPortfolio.Dynamic--;
             }
         }
     }
@@ -341,16 +345,17 @@ namespace PayoutPlan.Model
 
         public static void DailyRun()
         {
-            var modelPortfolio = modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Growth);
+            var modelPortfolio1 = modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Growth);
+            var modelPortfolio2 = modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Income);
 
-            var payoutProduct = new PayoutProduct(modelPortfolio, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
+            var payoutProduct = new PayoutProduct(modelPortfolio1, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
             {
                 PayoutFreequency = PayoutFreequency.Quarter,
-                Payout = 10_000.0D,
-                InvestmentLength = 10,
+                Payout = 500.0D,
+                InvestmentLength = 20,
             };
 
-            var investmentProduct = new InvestmentProduct(modelPortfolio, finalDerisking: true, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
+            var investmentProduct = new InvestmentProduct(modelPortfolio2, finalDerisking: true, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
             {
                 InvestmentLength = 20
             };
@@ -364,6 +369,8 @@ namespace PayoutPlan.Model
 
                 dateTimeNow.AddDay();
             }
+
+            Console.WriteLine("Finished");
         }
     }
 }
