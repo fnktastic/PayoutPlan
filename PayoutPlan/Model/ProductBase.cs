@@ -332,6 +332,7 @@ namespace PayoutPlan.Model
         static IDateTimeNow dateTimeNow = new DateTimeNow();
 
         static IModelPortfolioRepository modelPortfolioRepository = new ModelPortfolioRepository();
+        static IProductRepository productRepository = new ProductRepository(modelPortfolioRepository, dateTimeNow);
         static IRebalancerHandler rebalancerHandler = new RebalancerHandler();
         static IWithdrawalHandler withdrawalHandler = new WithdrawalHandler();
         static IPayoutHelper _payoutHelper = new PayoutHelper();
@@ -340,29 +341,25 @@ namespace PayoutPlan.Model
 
         public static void DailyRun()
         {
-            var modelPortfolio1 = modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Growth);
-            var modelPortfolio2 = modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Income);
-
-            var payoutProduct = new PayoutProduct(modelPortfolio1, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
-            {
-                PayoutFreequency = PayoutFreequency.Quarter,
-                Payout = 500.0D,
-                InvestmentLength = 20,
-            };
-
-            var investmentProduct = new InvestmentProduct(modelPortfolio2, finalDerisking: true, annualDerisking: true, investment: 100_000.0D, dateTimeNow)
-            {
-                InvestmentLength = 20
-            };
-
             var endOfProductLife = dateTimeNow.Now.AddYears(20);
 
+            var payoutProduct = productRepository.Get(ProductType.Payout);
+            var investmentProduct = productRepository.Get(ProductType.Investment);
+
+            int day = 1;
             while (dateTimeNow.Now < endOfProductLife)
             {
                 monitorHandler.Monitor(payoutProduct);
                 monitorHandler.Monitor(investmentProduct);
 
                 dateTimeNow.AddDay();
+
+                if((day % 365) == 0)
+                {
+
+                }
+
+                day++;
             }
 
             Console.WriteLine("Finished");
