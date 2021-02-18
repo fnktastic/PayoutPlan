@@ -1,25 +1,19 @@
-﻿using PayoutPlan.Extensions;
-using PayoutPlan.Model;
+﻿using PayoutPlan.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PayoutPlan.Helpers
+namespace PayoutPlan.Extensions
 {
-    public interface IPayoutHelper
+    public static class PayoutExtensions
     {
-        bool IsTodayPayoutDate(IPayoutable payoutable, IDateTimeNow dateTimeNow);
-    }
-
-    public class PayoutHelper : IPayoutHelper
-    {
-        public bool IsTodayPayoutDate(IPayoutable payoutable, IDateTimeNow dateTimeNow)
+        public static bool IsPayoutTriggered(this IPayoutable payoutable, IDateTimeNow dateTimeNow)
         {
             if (payoutable.Created.IsDateAs(dateTimeNow.Now)) return false;
 
-            switch(payoutable.PayoutFreequency)
+            switch (payoutable.PayoutFreequency)
             {
                 case PayoutFreequency.Month:
                     return payoutable.Created.IsMonthDay(dateTimeNow.Now);

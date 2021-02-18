@@ -1,11 +1,6 @@
 ﻿using PayoutPlan.Extensions;
-using PayoutPlan.Repository;
-using PayoutPlan.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PayoutPlan.Model
 {
@@ -62,13 +57,14 @@ namespace PayoutPlan.Model
             _rebalancerHandler = rebalancerHandler;
         }
 
+        public InvestmentProduct Product => (InvestmentProduct)_productBase;
         public bool IsFlexibleAllocationRebalancingTriggered => false;
         public bool IsFinalRebalancingTriggered => _productBase.LastTwoYearsPeriod && _productBase.FinalDerisking && _dateTime.Now.IsLastTuesdayInMonth() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
         public bool IsAnnualRebalancingTriggered => _productBase.AnnualDerisking && _dateTime.Now.IsLastDayInYear() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
 
         public override void Invoke()
         {
-            _rebalancerHandler.Execute(this, this.ProductBase);
+            _rebalancerHandler.Execute(this, Product);
         }
     }
 
@@ -76,26 +72,24 @@ namespace PayoutPlan.Model
     {
         private const int REBALANCING_TRESHOLD = 90;
 
-        private readonly IPayoutHelper _payoutHelper;
         private readonly IRebalanceHandler _rebalancerHandler;
         private readonly IPayoutHandler _payoutHandler;
 
-        public PayoutMonitor(IPayoutHelper payoutHelper, IRebalanceHandler rebalancerHandler, IPayoutHandler payoutHandler, ProductBase productBase, IDateTimeNow now) : base(productBase, now)
+        public PayoutMonitor(IRebalanceHandler rebalancerHandler, IPayoutHandler payoutHandler, ProductBase productBase, IDateTimeNow now) : base(productBase, now)
         {
-            _payoutHelper = payoutHelper;
             _rebalancerHandler = rebalancerHandler;
             _payoutHandler = payoutHandler;
         }
-
+        public PayoutProduct Product => (PayoutProduct)_productBase;
         public bool IsFlexibleAllocationRebalancingTriggered => _dateTime.Now.IsLastTuesdayInMonth() && _modelPortfolio.Dynamic >= _modelPortfolio.RebalancingTreshold;
         public bool IsFinalRebalancingTriggered => _productBase.LastTwoYearsPeriod && _dateTime.Now.IsLastTuesdayInMonth() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
         public bool IsAnnualRebalancingTriggered => _productBase.AnnualDerisking && _dateTime.Now.IsLastDayInYear() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
-        public bool IsPayoutTriggered => _payoutHelper.IsTodayPayoutDate((PayoutProduct)_productBase, _dateTime);
+        public bool IsPayoutTriggered => Product.IsPayoutTriggered(_dateTime);
 
         public override void Invoke()
         {
-            _rebalancerHandler.Execute(this, this.ProductBase);
-            _payoutHandler.Execute(this, this.ProductBase);
+            _rebalancerHandler.Execute(this, Product);
+            _payoutHandler.Execute(this, Product);
         }
     }
 
@@ -130,7 +124,7 @@ namespace PayoutPlan.Model
 
     public class InvestmentProduct : ProductBase
     {
-        public InvestmentProduct(IModelPortfolio modelPortfolio, bool finalDerisking, bool annualDerisking, double investment, IDateTimeNow dateTimeNow) : base(dateTimeNow)
+        public InvestmentProduct(IModelPortfolio modelPortfolio, bool finalDerisking, bool annualDerisking, double investment, int investmentLength, IDateTimeNow dateTimeNow) : base(dateTimeNow)
         {
             ModelPortfolio = modelPortfolio;
             Investment = investment;
@@ -152,7 +146,14 @@ namespace PayoutPlan.Model
     {
         public PayoutFreequency PayoutFreequency { get; set; }
         public double Payout { get; set; }
-        public PayoutProduct(IModelPortfolio modelPortfolio, bool annualDerisking, double investment, IDateTimeNow dateTimeNow) : base(dateTimeNow)
+
+        public PayoutProduct(IModelPortfolio modelPortfolio, 
+            bool annualDerisking, 
+            double investment, 
+            PayoutFreequency payoutFreequency, 
+            double payout, 
+            int investmentLength, 
+            IDateTimeNow dateTimeNow) : base(dateTimeNow)
         {
             ModelPortfolio = modelPortfolio;
             Investment = investment;
@@ -160,6 +161,9 @@ namespace PayoutPlan.Model
             AnnualDerisking = annualDerisking;
             ProductType = ProductType.Payout;
             FinalDerisking = true;
+            PayoutFreequency = payoutFreequency;
+            Payout = payout;
+            InvestmentLength = investmentLength;
         }
 
         public override void Withdraw(double? amount)
@@ -272,7 +276,7 @@ namespace PayoutPlan.Model
 
     public interface IMonitorHandler
     {
-        void Monitor(ProductBase productBase);
+        void Monitor(IEnumerable<ProductBase> productsBase);
     }
 
     public class MonitorHandler : IMonitorHandler
@@ -283,11 +287,14 @@ namespace PayoutPlan.Model
             _monitorFactory = monitorFactory;
         }
 
-        public void Monitor(ProductBase productBase)
+        public void Monitor(IEnumerable<ProductBase> productsBase)
         {
-            var monitor = _monitorFactory.Instance(productBase);
+            foreach(var productBase in productsBase)
+            {
+                var monitor = _monitorFactory.Instance(productBase);
 
-            monitor.Invoke();
+                monitor.Invoke();
+            }
         }
     }
 
@@ -320,15 +327,13 @@ namespace PayoutPlan.Model
     {
         private readonly IRebalanceHandler _rebalancerHandler;
         private readonly IPayoutHandler _payoutHandler;
-        private readonly IPayoutHelper _payoutHelper;
         private readonly IDateTimeNow _dateTimeNow;
 
-        public MonitorFactory(IDateTimeNow dateTimeNow, IRebalanceHandler rebalancerHandler, IPayoutHandler payoutHandler, IPayoutHelper payoutHelper)
+        public MonitorFactory(IDateTimeNow dateTimeNow, IRebalanceHandler rebalancerHandler, IPayoutHandler payoutHandler)
         {
             _dateTimeNow = dateTimeNow;
             _rebalancerHandler = rebalancerHandler;
             _payoutHandler = payoutHandler;
-            _payoutHelper = payoutHelper;
         }
 
         public MonitorBase Instance(ProductBase productBase)
@@ -336,7 +341,7 @@ namespace PayoutPlan.Model
             switch (productBase.ProductType)
             {
                 case ProductType.Payout:
-                    return new PayoutMonitor(_payoutHelper, _rebalancerHandler, _payoutHandler, productBase, _dateTimeNow);
+                    return new PayoutMonitor(_rebalancerHandler, _payoutHandler, productBase, _dateTimeNow);
                 default:
                     return new InvestmentMonitor(_rebalancerHandler, productBase, _dateTimeNow);
             }

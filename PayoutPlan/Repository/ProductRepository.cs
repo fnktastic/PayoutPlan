@@ -25,23 +25,26 @@ namespace PayoutPlan.Repository
 
         public ProductBase Get(ProductType productType)
         {
-            IModelPortfolio modelPortfolio = _modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Income);
+            IModelPortfolio modelPortfolio;
 
             switch (productType)
             {
                 case ProductType.Payout:
                     modelPortfolio = _modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Income);
-                    return new PayoutProduct(modelPortfolio, annualDerisking: true, investment: 100_000.0D, _dateTimeNow)
-                    {
-                        PayoutFreequency = PayoutFreequency.Year,
-                        Payout = 1200.50D,
-                        InvestmentLength = 20,
-                    };
+                    return new PayoutProduct(modelPortfolio, 
+                                             annualDerisking: true,
+                                             investment: 100_000.0D, 
+                                             PayoutFreequency.Quarter,
+                                             500.50D, 
+                                             20,
+                                             _dateTimeNow);
                 default:
-                    return new InvestmentProduct(modelPortfolio, finalDerisking: true, annualDerisking: true, investment: 100_000.0D, _dateTimeNow)
-                    {
-                        InvestmentLength = 20
-                    };
+                    modelPortfolio = _modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Income);
+                    return new InvestmentProduct(modelPortfolio, 
+                                                 finalDerisking: true, 
+                                                 annualDerisking: true, 
+                                                 investment: 100_000.0D, 20,
+                                                 _dateTimeNow);
             }
         }
     }

@@ -1,12 +1,6 @@
-﻿using PayoutPlan.Extensions;
-using PayoutPlan.Helpers;
-using PayoutPlan.Model;
+﻿using PayoutPlan.Model;
 using PayoutPlan.Repository;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PayoutPlan.Services
 {
@@ -22,7 +16,6 @@ namespace PayoutPlan.Services
         private readonly IProductRepository _productRepository;
         private readonly IRebalanceHandler _rebalancerHandler;
         private readonly IPayoutHandler _payoutHandler;
-        private readonly IPayoutHelper _payoutHelper;
         private readonly IMonitorFactory _monitorFactory;
         private readonly IMonitorHandler _monitorHandler;
 
@@ -33,8 +26,7 @@ namespace PayoutPlan.Services
             _productRepository = new ProductRepository(_modelPortfolioRepository, dateTimeNow);
             _rebalancerHandler = new RebalanceHandler();
             _payoutHandler = new PayoutHandler();
-            _payoutHelper = new PayoutHelper();
-            _monitorFactory = new MonitorFactory(dateTimeNow, _rebalancerHandler, _payoutHandler, _payoutHelper);
+            _monitorFactory = new MonitorFactory(dateTimeNow, _rebalancerHandler, _payoutHandler);
             _monitorHandler = new MonitorHandler(_monitorFactory);
         }
 
@@ -48,18 +40,11 @@ namespace PayoutPlan.Services
 
             while (_dateTimeNow.Now <= endOfProductLife) //going through the 20 years of product life
             {
-                DailyMonitoring(payoutProduct); //daily monitor payout
-
-                //DailyMonitoring(investmentProduct); //daily monitor investment
+                _monitorHandler.Monitor(new List<ProductBase>() { payoutProduct/*, investmentProduct*/ });
 
                 _dateTimeNow.AddDay(); // imitate next day
             }
             
-        }
-
-        private void DailyMonitoring(ProductBase productBase)
-        {
-            _monitorHandler.Monitor(productBase);
         }
     }
 }

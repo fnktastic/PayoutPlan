@@ -1,4 +1,5 @@
-﻿using PayoutPlan.Model;
+﻿using PayoutPlan.Extensions;
+using PayoutPlan.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,9 +49,9 @@ namespace PayoutPlan.Repository
             switch (productType)
             {
                 case ProductType.Payout: 
-                    return _payoutPortfolios.Find(x => x.RiskCategory == riskCategory);
+                    return _payoutPortfolios.Find(x => x.RiskCategory == riskCategory).Clone();
                 default: 
-                    return _investmentPortfolios.Find(x => x.RiskCategory == riskCategory);
+                    return _investmentPortfolios.Find(x => x.RiskCategory == riskCategory).Clone();
             }
         }
     }

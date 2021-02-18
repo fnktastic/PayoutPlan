@@ -44,11 +44,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\DateTimeExtensions.cs" />
+    <Compile Include="Extensions\ObjectExtensions.cs" />
+    <Compile Include="Extensions\PayoutExtensions.cs" />
     <Compile Include="Model\ProductBase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\ModelPortfolioRepository.cs" />
-    <Compile Include="Helpers\PayoutHelper.cs" />
     <Compile Include="Repository\ProductRepository.cs" />
     <Compile Include="Services\ProductsMonitorService.cs" />
   </ItemGroup>
