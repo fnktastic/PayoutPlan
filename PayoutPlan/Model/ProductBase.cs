@@ -33,15 +33,6 @@ namespace PayoutPlan.Model
         protected readonly IWithdrawalHandler _withdrawalHandler;
         protected readonly IDateTimeNow _dateTime;
         protected IModelPortfolio _modelPortfolio => _productBase.ModelPortfolio;
-        protected void Rebalance()
-        {
-            _rebalancerHandler.Rebalance(this);
-        }
-
-        protected void Withdraw()
-        {
-            _withdrawalHandler.Withdraw(this);
-        }
 
         public MonitorBase(ProductBase productBase, IRebalancerHandler rebalancerHandler, IWithdrawalHandler withdrawalHandler, IDateTimeNow dateTime)
         {
@@ -60,6 +51,15 @@ namespace PayoutPlan.Model
         {
             Rebalance();
             Withdraw();
+        }
+        private void Rebalance()
+        {
+            _rebalancerHandler.Rebalance(this);
+        }
+
+        private void Withdraw()
+        {
+            _withdrawalHandler.Withdraw(this);
         }
     }
 
@@ -260,15 +260,15 @@ namespace PayoutPlan.Model
 
     public class MonitorHandler : IMonitorHandler
     {
-        private readonly IMonitorFactory _rebalancerFactory;
-        public MonitorHandler(IMonitorFactory rebalancerFactory)
+        private readonly IMonitorFactory _monitorFactory;
+        public MonitorHandler(IMonitorFactory monitorFactory)
         {
-            _rebalancerFactory = rebalancerFactory;
+            _monitorFactory = monitorFactory;
         }
 
         public void Monitor(ProductBase productBase)
         {
-            var monitor = _rebalancerFactory.Instance(productBase);
+            var monitor = _monitorFactory.Instance(productBase);
 
             monitor.Invoke();
         }
@@ -341,18 +341,15 @@ namespace PayoutPlan.Model
 
         public static void DailyRun()
         {
-            var endOfProductLife = dateTimeNow.Now.AddYears(20);
-
             var payoutProduct = productRepository.Get(ProductType.Payout);
             var investmentProduct = productRepository.Get(ProductType.Investment);
 
             int day = 1;
-            while (dateTimeNow.Now < endOfProductLife)
+            var endOfProductLife = dateTimeNow.Now.AddYears(20);
+            while (dateTimeNow.Now < endOfProductLife) //going through the 20 years of product life
             {
                 monitorHandler.Monitor(payoutProduct);
                 monitorHandler.Monitor(investmentProduct);
-
-                dateTimeNow.AddDay();
 
                 if((day % 365) == 0)
                 {
@@ -360,9 +357,8 @@ namespace PayoutPlan.Model
                 }
 
                 day++;
+                dateTimeNow.AddDay();
             }
-
-            Console.WriteLine("Finished");
         }
     }
 }
