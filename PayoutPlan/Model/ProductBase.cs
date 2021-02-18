@@ -175,7 +175,7 @@ namespace PayoutPlan.Model
         protected double Investment { get; set; }
         public bool FinalDerisking { get; protected set; }
         public bool AnnualDerisking { get; protected set; }
-        protected double Balance { get; set; }
+        public double Balance { get; set; }
         public int InvestmentLength { get; set; }
         public DateTime Created { get; protected set; }
         public IModelPortfolio ModelPortfolio { get; protected set; }
@@ -351,14 +351,19 @@ namespace PayoutPlan.Model
                 monitorHandler.Monitor(payoutProduct);
                 monitorHandler.Monitor(investmentProduct);
 
-                if((day % 365) == 0)
+                if((day % 10) == 0)
                 {
-
+                    PrintProductState(payoutProduct, day);
                 }
 
                 day++;
                 dateTimeNow.AddDay();
             }
+        }
+
+        private static void PrintProductState(ProductBase productBase, int day)
+        {
+            Console.WriteLine($"Day {day}: {productBase.ProductType}, Balance: {productBase.Balance} | Defensive: {productBase.ModelPortfolio.Defensive} Dynamic: {productBase.ModelPortfolio.Dynamic} ");
         }
     }
 }
