@@ -27,44 +27,44 @@ namespace PayoutPlan.Model
     public abstract class MonitorBase
     {
         protected readonly ProductBase _productBase;
-        
+
         protected readonly IDateTimeNow _dateTime;
         protected IModelPortfolio _modelPortfolio => _productBase.ModelPortfolio;
+        protected ProductBase ProductBase => _productBase;
 
         public MonitorBase(ProductBase productBase, IDateTimeNow dateTime)
         {
             _productBase = productBase;
             _dateTime = dateTime;
         }
-        public ProductBase ProductBase => _productBase;
         public abstract void Invoke();
     }
 
     public interface IRabalanceMonitor
     {
-        bool IsFlexibleAllocationRebalancing { get; }
-        bool IsFinalRebalancing { get; }
-        bool IsAnnualRebalancing { get; }
+        bool IsFlexibleAllocationRebalancingTriggered { get; }
+        bool IsFinalRebalancingTriggered { get; }
+        bool IsAnnualRebalancingTriggered { get; }
     }
 
     public interface IPayoutMonitor
     {
-        bool IsPayout { get; }
+        bool IsPayoutTriggered { get; }
     }
 
     public class InvestmentMonitor : MonitorBase, IRabalanceMonitor
     {
-        protected readonly IRebalanceHandler _rebalancerHandler;
+        private const int REBALANCING_TRESHOLD = 90;
+
+        private readonly IRebalanceHandler _rebalancerHandler;
         public InvestmentMonitor(IRebalanceHandler rebalancerHandler, ProductBase productBase, IDateTimeNow now) : base(productBase, now)
         {
             _rebalancerHandler = rebalancerHandler;
         }
 
-        public bool IsFlexibleAllocationRebalancing => false;
-
-        public bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod && _productBase.FinalDerisking && _dateTime.Now.IsLastTuesdayInMonth();
-
-        public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive < 90 && _dateTime.Now.IsLastDayInYear();
+        public bool IsFlexibleAllocationRebalancingTriggered => false;
+        public bool IsFinalRebalancingTriggered => _productBase.LastTwoYearsPeriod && _productBase.FinalDerisking && _dateTime.Now.IsLastTuesdayInMonth() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
+        public bool IsAnnualRebalancingTriggered => _productBase.AnnualDerisking && _dateTime.Now.IsLastDayInYear() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
 
         public override void Invoke()
         {
@@ -74,8 +74,10 @@ namespace PayoutPlan.Model
 
     public class PayoutMonitor : MonitorBase, IRabalanceMonitor, IPayoutMonitor
     {
+        private const int REBALANCING_TRESHOLD = 90;
+
         private readonly IPayoutHelper _payoutHelper;
-        protected readonly IRebalanceHandler _rebalancerHandler;
+        private readonly IRebalanceHandler _rebalancerHandler;
         private readonly IPayoutHandler _payoutHandler;
 
         public PayoutMonitor(IPayoutHelper payoutHelper, IRebalanceHandler rebalancerHandler, IPayoutHandler payoutHandler, ProductBase productBase, IDateTimeNow now) : base(productBase, now)
@@ -85,10 +87,10 @@ namespace PayoutPlan.Model
             _payoutHandler = payoutHandler;
         }
 
-        public bool IsFlexibleAllocationRebalancing => _dateTime.Now.IsLastTuesdayInMonth() && _modelPortfolio.Dynamic >= _modelPortfolio.RebalancingTreshold;
-        public bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod && _dateTime.Now.IsLastTuesdayInMonth();
-        public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive < 90 && _dateTime.Now.IsLastDayInYear();
-        public bool IsPayout => _payoutHelper.IsTodayPayoutDate((PayoutProduct)_productBase, _dateTime);
+        public bool IsFlexibleAllocationRebalancingTriggered => _dateTime.Now.IsLastTuesdayInMonth() && _modelPortfolio.Dynamic >= _modelPortfolio.RebalancingTreshold;
+        public bool IsFinalRebalancingTriggered => _productBase.LastTwoYearsPeriod && _dateTime.Now.IsLastTuesdayInMonth() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
+        public bool IsAnnualRebalancingTriggered => _productBase.AnnualDerisking && _dateTime.Now.IsLastDayInYear() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
+        public bool IsPayoutTriggered => _payoutHelper.IsTodayPayoutDate((PayoutProduct)_productBase, _dateTime);
 
         public override void Invoke()
         {
@@ -185,6 +187,7 @@ namespace PayoutPlan.Model
         public IModelPortfolio ModelPortfolio { get; protected set; }
         public int InvestmentYear => _dateTimeNow.Now.Year - Created.Year;
         public bool LastTwoYearsPeriod => (InvestmentLength - InvestmentYear) <= 2 ? true : false;
+        public IDateTimeNow DateTimeNow => _dateTimeNow;
         public abstract void Withdraw(double? amount = null);
     }
 
@@ -203,11 +206,11 @@ namespace PayoutPlan.Model
 
     public enum RiskCategory
     {
-        Security,
-        Income,
-        Balance,
-        Growth,
-        ActionOriented
+        Security = 1,
+        Income = 2,
+        Balance = 3,
+        Growth = 4,
+        ActionOriented = 5
     }
 
     public interface IPayoutHandler
@@ -219,11 +222,12 @@ namespace PayoutPlan.Model
     {
         public void Execute(IPayoutMonitor monitor, ProductBase product)
         {
-            //withdrawal and payout logic
-            if(monitor.IsPayout)
+            if (monitor.IsPayoutTriggered)
             {
                 //example
                 product.Withdraw();
+
+                Console.WriteLine("{1} | Payout: {0}", product.Balance, product.DateTimeNow.Now);
             }
         }
     }
@@ -237,26 +241,31 @@ namespace PayoutPlan.Model
     {
         public void Execute(IRabalanceMonitor monitor, ProductBase product)
         {
-            //rebalance logic
-            if (monitor.IsAnnualRebalancing)
+            if (monitor.IsAnnualRebalancingTriggered)
             {
                 //example
                 product.ModelPortfolio.Defensive++;
                 product.ModelPortfolio.Dynamic--;
+
+                Console.WriteLine("{2} | Annual Rebalancing: {0} {1}", product.ModelPortfolio.Defensive, product.ModelPortfolio.Dynamic, product.DateTimeNow.Now);
             }
 
-            if (monitor.IsFinalRebalancing)
+            if (monitor.IsFinalRebalancingTriggered)
             {
                 //example
                 product.ModelPortfolio.Defensive++;
                 product.ModelPortfolio.Dynamic--;
+
+                Console.WriteLine("{2} | Final Rebalancing: {0} {1}", product.ModelPortfolio.Defensive, product.ModelPortfolio.Dynamic, product.DateTimeNow.Now);
             }
 
-            if (monitor.IsFlexibleAllocationRebalancing)
+            if (monitor.IsFlexibleAllocationRebalancingTriggered)
             {
                 //example
                 product.ModelPortfolio.Defensive++;
                 product.ModelPortfolio.Dynamic--;
+
+                Console.WriteLine("{2} | FlexibleA llocation Rebalancing: {0} {1}", product.ModelPortfolio.Defensive, product.ModelPortfolio.Dynamic, product.DateTimeNow.Now);
             }
         }
     }
@@ -312,7 +321,6 @@ namespace PayoutPlan.Model
         private readonly IRebalanceHandler _rebalancerHandler;
         private readonly IPayoutHandler _payoutHandler;
         private readonly IPayoutHelper _payoutHelper;
-
         private readonly IDateTimeNow _dateTimeNow;
 
         public MonitorFactory(IDateTimeNow dateTimeNow, IRebalanceHandler rebalancerHandler, IPayoutHandler payoutHandler, IPayoutHelper payoutHelper)

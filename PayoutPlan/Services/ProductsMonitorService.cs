@@ -46,11 +46,11 @@ namespace PayoutPlan.Services
 
             var endOfProductLife = _dateTimeNow.Now.AddYears(20);
 
-            while (_dateTimeNow.Now < endOfProductLife) //going through the 20 years of product life
+            while (_dateTimeNow.Now <= endOfProductLife) //going through the 20 years of product life
             {
                 DailyMonitoring(payoutProduct); //daily monitor payout
 
-                DailyMonitoring(investmentProduct); //daily monitor investment
+                //DailyMonitoring(investmentProduct); //daily monitor investment
 
                 _dateTimeNow.AddDay(); // imitate next day
             }
@@ -60,11 +60,6 @@ namespace PayoutPlan.Services
         private void DailyMonitoring(ProductBase productBase)
         {
             _monitorHandler.Monitor(productBase);
-
-            if (_dateTimeNow.Now.IsLastTuesdayInMonth())
-            {
-                Console.WriteLine($"Date {_dateTimeNow.Now}: {productBase.ProductType}, Balance: {productBase.Balance} | Defensive: {productBase.ModelPortfolio.Defensive} Dynamic: {productBase.ModelPortfolio.Dynamic} ");
-            }
         }
     }
 }
