@@ -1,5 +1,4 @@
-﻿using PayoutPlan.Controllers;
-using PayoutPlan.Model;
+﻿using PayoutPlan.Model;
 using PayoutPlan.Services;
 using System;
 using System.Collections.Generic;

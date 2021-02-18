@@ -26,71 +26,75 @@ namespace PayoutPlan.Model
 
     public abstract class MonitorBase
     {
-        private const int ANNUAL_REBALANCING_DEFENSIVE_TRESHOLD = 90;
-
         protected readonly ProductBase _productBase;
-        protected readonly IRebalancerHandler _rebalancerHandler;
-        protected readonly IWithdrawalHandler _withdrawalHandler;
+        
         protected readonly IDateTimeNow _dateTime;
         protected IModelPortfolio _modelPortfolio => _productBase.ModelPortfolio;
 
-        public MonitorBase(ProductBase productBase, IRebalancerHandler rebalancerHandler, IWithdrawalHandler withdrawalHandler, IDateTimeNow dateTime)
+        public MonitorBase(ProductBase productBase, IDateTimeNow dateTime)
         {
             _productBase = productBase;
-            _rebalancerHandler = rebalancerHandler;
-            _withdrawalHandler = withdrawalHandler;
             _dateTime = dateTime;
         }
-
-        public abstract bool IsFlexibleAllocationRebalancing { get; }
-        public abstract bool IsFinalRebalancing { get; }
-        public abstract bool IsPayout { get; }
         public ProductBase ProductBase => _productBase;
-        public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive < ANNUAL_REBALANCING_DEFENSIVE_TRESHOLD && _dateTime.Now.IsLastDayInYear();
-        public void Invoke()
-        {
-            Rebalance();
-            Withdraw();
-        }
-        private void Rebalance()
-        {
-            _rebalancerHandler.Rebalance(this);
-        }
-
-        private void Withdraw()
-        {
-            _withdrawalHandler.Withdraw(this);
-        }
+        public abstract void Invoke();
     }
 
-    public class InvestmentMonitor : MonitorBase
+    public interface IRabalanceMonitor
     {
-        public InvestmentMonitor(ProductBase productBase, IRebalancerHandler rebalancerHandler, IWithdrawalHandler withdrawalHandler, IDateTimeNow now) : base(productBase, rebalancerHandler, withdrawalHandler, now)
-        {
-
-        }
-
-        public override bool IsFlexibleAllocationRebalancing => false;
-
-        public override bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod && _productBase.FinalDerisking && _dateTime.Now.IsLastTuesdayInMonth();
-
-        public override bool IsPayout => false;
+        bool IsFlexibleAllocationRebalancing { get; }
+        bool IsFinalRebalancing { get; }
+        bool IsAnnualRebalancing { get; }
     }
 
-    public class PayoutMonitor : MonitorBase
+    public interface IPayoutMonitor
+    {
+        bool IsPayout { get; }
+    }
+
+    public class InvestmentMonitor : MonitorBase, IRabalanceMonitor
+    {
+        protected readonly IRebalanceHandler _rebalancerHandler;
+        public InvestmentMonitor(IRebalanceHandler rebalancerHandler, ProductBase productBase, IDateTimeNow now) : base(productBase, now)
+        {
+            _rebalancerHandler = rebalancerHandler;
+        }
+
+        public bool IsFlexibleAllocationRebalancing => false;
+
+        public bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod && _productBase.FinalDerisking && _dateTime.Now.IsLastTuesdayInMonth();
+
+        public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive < 90 && _dateTime.Now.IsLastDayInYear();
+
+        public override void Invoke()
+        {
+            _rebalancerHandler.Execute(this, this.ProductBase);
+        }
+    }
+
+    public class PayoutMonitor : MonitorBase, IRabalanceMonitor, IPayoutMonitor
     {
         private readonly IPayoutHelper _payoutHelper;
+        protected readonly IRebalanceHandler _rebalancerHandler;
+        private readonly IPayoutHandler _payoutHandler;
 
-        public PayoutMonitor(ProductBase productBase, IRebalancerHandler rebalancerHandler, IWithdrawalHandler withdrawalHandler, IDateTimeNow now, IPayoutHelper payoutHelper) : base(productBase, rebalancerHandler, withdrawalHandler, now)
+        public PayoutMonitor(IPayoutHelper payoutHelper, IRebalanceHandler rebalancerHandler, IPayoutHandler payoutHandler, ProductBase productBase, IDateTimeNow now) : base(productBase, now)
         {
             _payoutHelper = payoutHelper;
+            _rebalancerHandler = rebalancerHandler;
+            _payoutHandler = payoutHandler;
         }
 
-        public override bool IsFlexibleAllocationRebalancing => _dateTime.Now.IsLastTuesdayInMonth() && _modelPortfolio.Dynamic >= _modelPortfolio.RebalancingTreshold;
-        
-        public override bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod && _dateTime.Now.IsLastTuesdayInMonth();
-        
-        public override bool IsPayout => _payoutHelper.IsTodayPayoutDate((PayoutProduct)_productBase, _dateTime);
+        public bool IsFlexibleAllocationRebalancing => _dateTime.Now.IsLastTuesdayInMonth() && _modelPortfolio.Dynamic >= _modelPortfolio.RebalancingTreshold;
+        public bool IsFinalRebalancing => _productBase.LastTwoYearsPeriod && _dateTime.Now.IsLastTuesdayInMonth();
+        public bool IsAnnualRebalancing => _productBase.AnnualDerisking && _productBase.ModelPortfolio.Defensive < 90 && _dateTime.Now.IsLastDayInYear();
+        public bool IsPayout => _payoutHelper.IsTodayPayoutDate((PayoutProduct)_productBase, _dateTime);
+
+        public override void Invoke()
+        {
+            _rebalancerHandler.Execute(this, this.ProductBase);
+            _payoutHandler.Execute(this, this.ProductBase);
+        }
     }
 
     public interface IModelPortfolio
@@ -206,53 +210,53 @@ namespace PayoutPlan.Model
         ActionOriented
     }
 
-    public interface IWithdrawalHandler
+    public interface IPayoutHandler
     {
-        void Withdraw(MonitorBase monitorBase);
+        void Execute(IPayoutMonitor monitor, ProductBase product);
     }
 
-    public class WithdrawalHandler : IWithdrawalHandler
+    public class PayoutHandler : IPayoutHandler
     {
-        public void Withdraw(MonitorBase monitorBase)
+        public void Execute(IPayoutMonitor monitor, ProductBase product)
         {
             //withdrawal and payout logic
-            if(monitorBase.IsPayout)
+            if(monitor.IsPayout)
             {
                 //example
-                monitorBase.ProductBase.Withdraw();
+                product.Withdraw();
             }
         }
     }
 
-    public interface IRebalancerHandler
+    public interface IRebalanceHandler
     {
-        void Rebalance(MonitorBase productBase);
+        void Execute(IRabalanceMonitor monitor, ProductBase product);
     }
 
-    public class RebalancerHandler : IRebalancerHandler
+    public class RebalanceHandler : IRebalanceHandler
     {
-        public void Rebalance(MonitorBase rebalancerBase)
+        public void Execute(IRabalanceMonitor monitor, ProductBase product)
         {
             //rebalance logic
-            if (rebalancerBase.IsAnnualRebalancing)
+            if (monitor.IsAnnualRebalancing)
             {
                 //example
-                rebalancerBase.ProductBase.ModelPortfolio.Defensive++;
-                rebalancerBase.ProductBase.ModelPortfolio.Dynamic--;
+                product.ModelPortfolio.Defensive++;
+                product.ModelPortfolio.Dynamic--;
             }
 
-            if (rebalancerBase.IsFinalRebalancing)
+            if (monitor.IsFinalRebalancing)
             {
                 //example
-                rebalancerBase.ProductBase.ModelPortfolio.Defensive++;
-                rebalancerBase.ProductBase.ModelPortfolio.Dynamic--;
+                product.ModelPortfolio.Defensive++;
+                product.ModelPortfolio.Dynamic--;
             }
 
-            if (rebalancerBase.IsFlexibleAllocationRebalancing)
+            if (monitor.IsFlexibleAllocationRebalancing)
             {
                 //example
-                rebalancerBase.ProductBase.ModelPortfolio.Defensive++;
-                rebalancerBase.ProductBase.ModelPortfolio.Dynamic--;
+                product.ModelPortfolio.Defensive++;
+                product.ModelPortfolio.Dynamic--;
             }
         }
     }
@@ -305,17 +309,17 @@ namespace PayoutPlan.Model
 
     public class MonitorFactory : IMonitorFactory
     {
-        private readonly IRebalancerHandler _rebalancerHandler;
-        private readonly IWithdrawalHandler _withdrawalHandler;
+        private readonly IRebalanceHandler _rebalancerHandler;
+        private readonly IPayoutHandler _payoutHandler;
         private readonly IPayoutHelper _payoutHelper;
 
         private readonly IDateTimeNow _dateTimeNow;
 
-        public MonitorFactory(IDateTimeNow dateTimeNow, IRebalancerHandler rebalancerHandler, IWithdrawalHandler withdrawalHandler, IPayoutHelper payoutHelper)
+        public MonitorFactory(IDateTimeNow dateTimeNow, IRebalanceHandler rebalancerHandler, IPayoutHandler payoutHandler, IPayoutHelper payoutHelper)
         {
             _dateTimeNow = dateTimeNow;
             _rebalancerHandler = rebalancerHandler;
-            _withdrawalHandler = withdrawalHandler;
+            _payoutHandler = payoutHandler;
             _payoutHelper = payoutHelper;
         }
 
@@ -324,9 +328,9 @@ namespace PayoutPlan.Model
             switch (productBase.ProductType)
             {
                 case ProductType.Payout:
-                    return new PayoutMonitor(productBase, _rebalancerHandler, _withdrawalHandler, _dateTimeNow, _payoutHelper);
+                    return new PayoutMonitor(_payoutHelper, _rebalancerHandler, _payoutHandler, productBase, _dateTimeNow);
                 default:
-                    return new InvestmentMonitor(productBase, _rebalancerHandler, _withdrawalHandler, _dateTimeNow);
+                    return new InvestmentMonitor(_rebalancerHandler, productBase, _dateTimeNow);
             }
         }
     }

@@ -20,8 +20,8 @@ namespace PayoutPlan.Services
         private readonly IDateTimeNow _dateTimeNow;
         private readonly IModelPortfolioRepository _modelPortfolioRepository;
         private readonly IProductRepository _productRepository;
-        private readonly IRebalancerHandler _rebalancerHandler;
-        private readonly IWithdrawalHandler _withdrawalHandler;
+        private readonly IRebalanceHandler _rebalancerHandler;
+        private readonly IPayoutHandler _payoutHandler;
         private readonly IPayoutHelper _payoutHelper;
         private readonly IMonitorFactory _monitorFactory;
         private readonly IMonitorHandler _monitorHandler;
@@ -31,10 +31,10 @@ namespace PayoutPlan.Services
             _dateTimeNow = dateTimeNow;
             _modelPortfolioRepository = new ModelPortfolioRepository();
             _productRepository = new ProductRepository(_modelPortfolioRepository, dateTimeNow);
-            _rebalancerHandler = new RebalancerHandler();
-            _withdrawalHandler = new WithdrawalHandler();
+            _rebalancerHandler = new RebalanceHandler();
+            _payoutHandler = new PayoutHandler();
             _payoutHelper = new PayoutHelper();
-            _monitorFactory = new MonitorFactory(dateTimeNow, _rebalancerHandler, _withdrawalHandler, _payoutHelper);
+            _monitorFactory = new MonitorFactory(dateTimeNow, _rebalancerHandler, _payoutHandler, _payoutHelper);
             _monitorHandler = new MonitorHandler(_monitorFactory);
         }
 
@@ -61,10 +61,10 @@ namespace PayoutPlan.Services
         {
             _monitorHandler.Monitor(productBase);
 
-            /*if (_dateTimeNow.Now.IsLastTuesdayInMonth())
+            if (_dateTimeNow.Now.IsLastTuesdayInMonth())
             {
                 Console.WriteLine($"Date {_dateTimeNow.Now}: {productBase.ProductType}, Balance: {productBase.Balance} | Defensive: {productBase.ModelPortfolio.Defensive} Dynamic: {productBase.ModelPortfolio.Dynamic} ");
-            }*/
+            }
         }
     }
 }
