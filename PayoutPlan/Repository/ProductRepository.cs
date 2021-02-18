@@ -34,8 +34,8 @@ namespace PayoutPlan.Repository
                     return new PayoutProduct(modelPortfolio, 
                                              annualDerisking: true,
                                              investment: 100_000.0D, 
-                                             PayoutFreequency.Quarter,
-                                             500.50D, 
+                                             PayoutFreequency.Month,
+                                             150.50D, 
                                              20,
                                              _dateTimeNow);
                 default:
