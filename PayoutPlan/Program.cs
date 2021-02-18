@@ -1,4 +1,5 @@
-﻿using PayoutPlan.Model;
+﻿using PayoutPlan.Controllers;
+using PayoutPlan.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace PayoutPlan
     {
         static void Main(string[] args)
         {
-            Imitator.DailyRun();
+            ControllerImitation.DailyRun();
 
             Console.ReadKey();
         }

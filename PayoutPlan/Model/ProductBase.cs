@@ -326,44 +326,4 @@ namespace PayoutPlan.Model
             }
         }
     }
-
-    public static class Imitator
-    {
-        static IDateTimeNow dateTimeNow = new DateTimeNow();
-
-        static IModelPortfolioRepository modelPortfolioRepository = new ModelPortfolioRepository();
-        static IProductRepository productRepository = new ProductRepository(modelPortfolioRepository, dateTimeNow);
-        static IRebalancerHandler rebalancerHandler = new RebalancerHandler();
-        static IWithdrawalHandler withdrawalHandler = new WithdrawalHandler();
-        static IPayoutHelper _payoutHelper = new PayoutHelper();
-        static IMonitorFactory monitorFactory = new MonitorFactory(dateTimeNow, rebalancerHandler, withdrawalHandler, _payoutHelper);
-        static IMonitorHandler monitorHandler = new MonitorHandler(monitorFactory);
-
-        public static void DailyRun()
-        {
-            var payoutProduct = productRepository.Get(ProductType.Payout);
-            var investmentProduct = productRepository.Get(ProductType.Investment);
-
-            int day = 1;
-            var endOfProductLife = dateTimeNow.Now.AddYears(20);
-            while (dateTimeNow.Now < endOfProductLife) //going through the 20 years of product life
-            {
-                monitorHandler.Monitor(payoutProduct);
-                monitorHandler.Monitor(investmentProduct);
-
-                if((day % 10) == 0)
-                {
-                    PrintProductState(payoutProduct, day);
-                }
-
-                day++;
-                dateTimeNow.AddDay();
-            }
-        }
-
-        private static void PrintProductState(ProductBase productBase, int day)
-        {
-            Console.WriteLine($"Day {day}: {productBase.ProductType}, Balance: {productBase.Balance} | Defensive: {productBase.ModelPortfolio.Defensive} Dynamic: {productBase.ModelPortfolio.Dynamic} ");
-        }
-    }
 }

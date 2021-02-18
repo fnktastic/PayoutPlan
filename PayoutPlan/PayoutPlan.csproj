@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\ControllerImitation.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Model\ProductBase.cs" />
     <Compile Include="Program.cs" />
@@ -50,6 +51,7 @@
     <Compile Include="Repository\ModelPortfolioRepository.cs" />
     <Compile Include="Helpers\PayoutHelper.cs" />
     <Compile Include="Repository\ProductRepository.cs" />
+    <Compile Include="Services\ProductsMonitorService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
