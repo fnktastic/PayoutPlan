@@ -122,11 +122,6 @@ namespace PayoutPlan.Model
         public int Dynamic { get; set; }
     }
 
-    public interface IWithdrawalable
-    {
-        void Withdraw(double? amount);
-    }
-
     public class InvestmentProduct : ProductBase
     {
         public InvestmentProduct(IModelPortfolio modelPortfolio, bool finalDerisking, bool annualDerisking, double investment, IDateTimeNow dateTimeNow) : base(dateTimeNow)
