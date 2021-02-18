@@ -1,5 +1,6 @@
 ﻿using PayoutPlan.Controllers;
 using PayoutPlan.Model;
+using PayoutPlan.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,11 @@ namespace PayoutPlan
     {
         static void Main(string[] args)
         {
-            ControllerImitation.DailyRun();
+            IDateTimeNow dateTimeNow = new DateTimeNow();
+
+            IProductsMonitorService _productsMonitorService = new ProductsMonitorService(dateTimeNow);
+
+            _productsMonitorService.Monitor();
 
             Console.ReadKey();
         }

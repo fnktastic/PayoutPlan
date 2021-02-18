@@ -218,6 +218,7 @@ namespace PayoutPlan.Model
             //withdrawal and payout logic
             if(monitorBase.IsPayout)
             {
+                //example
                 monitorBase.ProductBase.Withdraw();
             }
         }
@@ -235,18 +236,21 @@ namespace PayoutPlan.Model
             //rebalance logic
             if (rebalancerBase.IsAnnualRebalancing)
             {
+                //example
                 rebalancerBase.ProductBase.ModelPortfolio.Defensive++;
                 rebalancerBase.ProductBase.ModelPortfolio.Dynamic--;
             }
 
             if (rebalancerBase.IsFinalRebalancing)
             {
+                //example
                 rebalancerBase.ProductBase.ModelPortfolio.Defensive++;
                 rebalancerBase.ProductBase.ModelPortfolio.Dynamic--;
             }
 
             if (rebalancerBase.IsFlexibleAllocationRebalancing)
             {
+                //example
                 rebalancerBase.ProductBase.ModelPortfolio.Defensive++;
                 rebalancerBase.ProductBase.ModelPortfolio.Dynamic--;
             }

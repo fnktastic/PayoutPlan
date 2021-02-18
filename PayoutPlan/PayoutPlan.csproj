@@ -43,7 +43,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controllers\ControllerImitation.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Model\ProductBase.cs" />
     <Compile Include="Program.cs" />

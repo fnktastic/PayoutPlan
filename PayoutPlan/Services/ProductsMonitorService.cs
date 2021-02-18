@@ -1,4 +1,5 @@
-﻿using PayoutPlan.Helpers;
+﻿using PayoutPlan.Extensions;
+using PayoutPlan.Helpers;
 using PayoutPlan.Model;
 using PayoutPlan.Repository;
 using System;
@@ -18,55 +19,52 @@ namespace PayoutPlan.Services
     {
         private readonly IDateTimeNow _dateTimeNow;
         private readonly IModelPortfolioRepository _modelPortfolioRepository;
-        private readonly IProductRepository _productRepository; 
-        private readonly IRebalancerHandler _rebalancerHandler; 
+        private readonly IProductRepository _productRepository;
+        private readonly IRebalancerHandler _rebalancerHandler;
         private readonly IWithdrawalHandler _withdrawalHandler;
-        private readonly IPayoutHelper _payoutHelper; 
-        private readonly IMonitorFactory _monitorFactory; 
+        private readonly IPayoutHelper _payoutHelper;
+        private readonly IMonitorFactory _monitorFactory;
         private readonly IMonitorHandler _monitorHandler;
 
-        public ProductsMonitorService()
+        public ProductsMonitorService(IDateTimeNow dateTimeNow)
         {
-             _dateTimeNow = new DateTimeNow();
+            _dateTimeNow = dateTimeNow;
             _modelPortfolioRepository = new ModelPortfolioRepository();
-            _productRepository = new ProductRepository(_modelPortfolioRepository, _dateTimeNow);
+            _productRepository = new ProductRepository(_modelPortfolioRepository, dateTimeNow);
             _rebalancerHandler = new RebalancerHandler();
             _withdrawalHandler = new WithdrawalHandler();
             _payoutHelper = new PayoutHelper();
-            _monitorFactory = new MonitorFactory(_dateTimeNow, _rebalancerHandler, _withdrawalHandler, _payoutHelper);
+            _monitorFactory = new MonitorFactory(dateTimeNow, _rebalancerHandler, _withdrawalHandler, _payoutHelper);
             _monitorHandler = new MonitorHandler(_monitorFactory);
         }
 
         public void Monitor()
         {
-            DailyRun();
-        }
-
-        private void DailyRun()
-        {
             var payoutProduct = _productRepository.Get(ProductType.Payout);
+
             var investmentProduct = _productRepository.Get(ProductType.Investment);
 
-            int day = 1;
             var endOfProductLife = _dateTimeNow.Now.AddYears(20);
+
             while (_dateTimeNow.Now < endOfProductLife) //going through the 20 years of product life
             {
-                _monitorHandler.Monitor(payoutProduct);
-                _monitorHandler.Monitor(investmentProduct);
+                DailyMonitoring(payoutProduct); //daily monitor payout
 
-                if ((day % 10) == 0)
-                {
-                    PrintProductState(payoutProduct, day);
-                }
+                DailyMonitoring(investmentProduct); //daily monitor investment
 
-                day++;
-                _dateTimeNow.AddDay();
+                _dateTimeNow.AddDay(); // imitate next day
             }
+            
         }
 
-        private void PrintProductState(ProductBase productBase, int day)
+        private void DailyMonitoring(ProductBase productBase)
         {
-            Console.WriteLine($"Day {day}: {productBase.ProductType}, Balance: {productBase.Balance} | Defensive: {productBase.ModelPortfolio.Defensive} Dynamic: {productBase.ModelPortfolio.Dynamic} ");
+            _monitorHandler.Monitor(productBase);
+
+            /*if (_dateTimeNow.Now.IsLastTuesdayInMonth())
+            {
+                Console.WriteLine($"Date {_dateTimeNow.Now}: {productBase.ProductType}, Balance: {productBase.Balance} | Defensive: {productBase.ModelPortfolio.Defensive} Dynamic: {productBase.ModelPortfolio.Dynamic} ");
+            }*/
         }
     }
 }
