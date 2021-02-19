@@ -36,11 +36,17 @@ namespace PayoutPlan.Services
 
             var investmentProduct = _productRepository.Get(ProductType.Investment);
 
+            var products = new List<ProductBase>()
+            {
+                //payoutProduct,
+                investmentProduct
+            };
+
             var endOfProductLife = _dateTimeNow.Now.AddYears(20);
 
             while (_dateTimeNow.Now <= endOfProductLife) //going through the 20 years of product life
             {
-                _monitorHandler.Monitor(new List<ProductBase>() { payoutProduct/*, investmentProduct*/ });
+                _monitorHandler.Monitor(products);
 
                 _dateTimeNow.AddDay(); // imitate next day
             }
