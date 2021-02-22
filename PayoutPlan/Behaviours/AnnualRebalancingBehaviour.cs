@@ -5,11 +5,11 @@ using System;
 namespace PayoutPlan.Behaviours
 {
 
-    public class AnnualRebalanceBehaviour : IBehaviour
+    public class AnnualRebalancingBehaviour : IBehaviour
     {
         protected readonly ProductBase _productBase;
 
-        public AnnualRebalanceBehaviour(ProductBase productBase)
+        public AnnualRebalancingBehaviour(ProductBase productBase)
         {
             _productBase = productBase;
         }

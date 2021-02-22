@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Behaviours\AnnualRebalanceBehaviour.cs" />
+    <Compile Include="Behaviours\AnnualRebalancingBehaviour.cs" />
     <Compile Include="Behaviours\FinalRebalancingBehaviour.cs" />
     <Compile Include="Behaviours\FlexibleAllocationRebalancingBehaviour.cs" />
     <Compile Include="Behaviours\PayoutWithdrawalBehaviour.cs" />

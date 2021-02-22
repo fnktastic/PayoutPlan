@@ -22,7 +22,7 @@ namespace PayoutPlan.Factories
                 case BehaviourEnum.FinalRebalancing:
                     return new FinalRebalancingBehaviour(productBase);
                 case BehaviourEnum.AnnualRebalancing:
-                    return new AnnualRebalanceBehaviour(productBase);
+                    return new AnnualRebalancingBehaviour(productBase);
                 case BehaviourEnum.FlexibleAllocationsRebalancing:
                     return new FlexibleAllocationRebalancingBehaviour(productBase);
                 default:
