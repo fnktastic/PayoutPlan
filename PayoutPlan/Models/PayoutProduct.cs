@@ -2,22 +2,22 @@
 using PayoutPlan.Interfaces.Common;
 using System;
 
-namespace PayoutPlan.Model
+namespace PayoutPlan.Models
 {
-    public interface IPayout
+    public interface IPayoutable
     {
-        PayoutFreequency PayoutFreequency { get; }
+        PayoutFreequencyEnum PayoutFreequency { get; }
         double Payout { get; }
         DateTime Created { get; }
     }
 
-    public class PayoutProduct : ProductBase, IPayout
+    public class PayoutProduct : ProductBase, IPayoutable
     {
-        public PayoutFreequency PayoutFreequency { get; set; }
+        public PayoutFreequencyEnum PayoutFreequency { get; set; }
         public double Payout { get; set; }
         public PayoutProduct(IDateTimeNow dateTimeNow) : base(dateTimeNow)
         {
-            ProductType = ProductType.Payout;
+            ProductType = ProductTypeEnum.Payout;
             FinalDerisking = true;
         }
     }

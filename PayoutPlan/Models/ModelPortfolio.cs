@@ -1,10 +1,10 @@
 ﻿using PayoutPlan.Enum;
 
-namespace PayoutPlan.Model
+namespace PayoutPlan.Models
 {
     public interface IModelPortfolio
     {
-        RiskCategory RiskCategory { get; set; }
+        RiskCategoryEnum RiskCategory { get; set; }
         int RebalancingTreshold { get; set; }
         int Defensive { get; set; }
         int Dynamic { get; set; }
@@ -17,7 +17,7 @@ namespace PayoutPlan.Model
 
         }
 
-        public ModelPortfolio(RiskCategory riskCategory, int rebalancingTreshold, int defensive, int dynamic)
+        public ModelPortfolio(RiskCategoryEnum riskCategory, int rebalancingTreshold, int defensive, int dynamic)
         {
             RiskCategory = riskCategory;
             RebalancingTreshold = rebalancingTreshold;
@@ -25,7 +25,7 @@ namespace PayoutPlan.Model
             Dynamic = dynamic;
         }
 
-        public RiskCategory RiskCategory { get; set; }
+        public RiskCategoryEnum RiskCategory { get; set; }
         public int RebalancingTreshold { get; set; }
         public int Defensive { get; set; }
         public int Dynamic { get; set; }

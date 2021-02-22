@@ -3,7 +3,7 @@ using PayoutPlan.Interfaces;
 using PayoutPlan.Interfaces.Common;
 using System;
 
-namespace PayoutPlan.Model
+namespace PayoutPlan.Models
 {
     public abstract class ProductBase : IProduct
     {
@@ -14,7 +14,7 @@ namespace PayoutPlan.Model
             _dateTimeNow = dateTimeNow;
         }
 
-        public ProductType ProductType { get; set; }
+        public ProductTypeEnum ProductType { get; set; }
         public double Investment { get; set; }
         public bool FinalDerisking { get; set; }
         public bool AnnualDerisking { get; set; }
@@ -25,6 +25,5 @@ namespace PayoutPlan.Model
         public int InvestmentYear => _dateTimeNow.Now.Year - Created.Year;
         public bool LastTwoYearsPeriod => (InvestmentLength - InvestmentYear) <= 2;
         public IDateTimeNow DateTimeNow => _dateTimeNow;
-        public IBehaviour Withdrawal { get; set; }
     }
 }

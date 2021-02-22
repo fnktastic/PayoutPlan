@@ -43,12 +43,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Behaviours\InvestmentWithdrawalBehaviour.cs" />
+    <Compile Include="Behaviours\AnnualRebalanceBehaviour.cs" />
+    <Compile Include="Behaviours\FinalRebalancingBehaviour.cs" />
+    <Compile Include="Behaviours\FlexibleAllocationRebalancingBehaviour.cs" />
     <Compile Include="Behaviours\PayoutWithdrawalBehaviour.cs" />
     <Compile Include="Common\DateTimeNow.cs" />
-    <Compile Include="Enum\RiskCategory.cs" />
-    <Compile Include="Enum\PayoutFreequency.cs" />
-    <Compile Include="Enum\ProductType.cs" />
+    <Compile Include="Enum\BehaviourEnum.cs" />
+    <Compile Include="Enum\RiskCategoryEnum.cs" />
+    <Compile Include="Enum\PayoutFreequencyEnum.cs" />
+    <Compile Include="Enum\ProductTypeEnum.cs" />
+    <Compile Include="Exceptions\BehaviourNotFoundException.cs" />
+    <Compile Include="Exceptions\MonitorNotFoundException.cs" />
+    <Compile Include="Exceptions\PayoutFreequencyNotFoundException.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\PayoutExtensions.cs" />
@@ -62,10 +68,10 @@
     <Compile Include="Interfaces\IPayoutMonitor.cs" />
     <Compile Include="Interfaces\IProduct.cs" />
     <Compile Include="Interfaces\IRabalanceMonitor.cs" />
-    <Compile Include="Model\InvestmentProduct.cs" />
-    <Compile Include="Model\ModelPortfolio.cs" />
-    <Compile Include="Model\PayoutProduct.cs" />
-    <Compile Include="Model\ProductBase.cs" />
+    <Compile Include="Models\InvestmentProduct.cs" />
+    <Compile Include="Models\ModelPortfolio.cs" />
+    <Compile Include="Models\PayoutProduct.cs" />
+    <Compile Include="Models\ProductBase.cs" />
     <Compile Include="Monitor\InvestmentMonitor.cs" />
     <Compile Include="Monitor\MonitorBase.cs" />
     <Compile Include="Monitor\PayoutMonitor.cs" />

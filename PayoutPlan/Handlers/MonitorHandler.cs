@@ -1,5 +1,5 @@
 ﻿using PayoutPlan.Factories;
-using PayoutPlan.Model;
+using PayoutPlan.Models;
 using System.Collections.Generic;
 
 namespace PayoutPlan.Handlers

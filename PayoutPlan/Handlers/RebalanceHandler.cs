@@ -1,6 +1,6 @@
-﻿using PayoutPlan.Interfaces;
-using PayoutPlan.Model;
-using System;
+﻿using PayoutPlan.Factories;
+using PayoutPlan.Interfaces;
+using PayoutPlan.Models;
 
 namespace PayoutPlan.Handlers
 {
@@ -11,33 +11,28 @@ namespace PayoutPlan.Handlers
 
     public class RebalanceHandler : IRebalanceHandler
     {
+        private readonly IBehaviourFactory _behaviourFactory;
+
+        public RebalanceHandler(IBehaviourFactory behaviourFactory)
+        {
+            _behaviourFactory = behaviourFactory;
+        }
+
         public void Execute(IRabalanceMonitor monitor, ProductBase product)
         {
             if (monitor.IsAnnualRebalancingTriggered)
             {
-                //example
-                product.ModelPortfolio.Defensive++;
-                product.ModelPortfolio.Dynamic--;
-
-                Console.WriteLine("{2} | Annual Rebalancing: {0} {1}", product.ModelPortfolio.Defensive, product.ModelPortfolio.Dynamic, product.DateTimeNow.Now);
+                _behaviourFactory.Instance(product, Enum.BehaviourEnum.AnnualRebalancing).Execute();
             }
 
             if (monitor.IsFinalRebalancingTriggered)
             {
-                //example
-                product.ModelPortfolio.Defensive++;
-                product.ModelPortfolio.Dynamic--;
-
-                Console.WriteLine("{2} | Final Rebalancing: {0} {1}", product.ModelPortfolio.Defensive, product.ModelPortfolio.Dynamic, product.DateTimeNow.Now);
+                _behaviourFactory.Instance(product, Enum.BehaviourEnum.FinalRebalancing).Execute();
             }
 
             if (monitor.IsFlexibleAllocationRebalancingTriggered)
             {
-                //example
-                product.ModelPortfolio.Defensive++;
-                product.ModelPortfolio.Dynamic--;
-
-                Console.WriteLine("{2} | FlexibleA llocation Rebalancing: {0} {1}", product.ModelPortfolio.Defensive, product.ModelPortfolio.Dynamic, product.DateTimeNow.Now);
+                _behaviourFactory.Instance(product, Enum.BehaviourEnum.FlexibleAllocationsRebalancing).Execute();
             }
         }
     }

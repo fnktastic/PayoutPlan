@@ -1,13 +1,13 @@
 ﻿using PayoutPlan.Enum;
 using PayoutPlan.Factories;
 using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Model;
+using PayoutPlan.Models;
 
 namespace PayoutPlan.Repository
 {
     public interface IProductRepository
     {
-        ProductBase Get(ProductType productType);
+        ProductBase Get(ProductTypeEnum productType);
     }
 
     public class ProductRepository : IProductRepository
@@ -23,37 +23,35 @@ namespace PayoutPlan.Repository
             _dateTimeNow = dateTimeNow;
         }
 
-        public ProductBase Get(ProductType productType)
+        public ProductBase Get(ProductTypeEnum productType)
         {
             IModelPortfolio modelPortfolio;
 
             switch (productType)
             {
-                case ProductType.Payout:
-                    modelPortfolio = _modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Income);
-                    var payoutProduct = new PayoutProduct(_dateTimeNow)
+                case ProductTypeEnum.Payout:
+                    modelPortfolio = _modelPortfolioRepository.Get(ProductTypeEnum.Investment, RiskCategoryEnum.Income);
+                    return new PayoutProduct(_dateTimeNow)
                     {
                         ModelPortfolio = modelPortfolio,
                         AnnualDerisking = true,
                         Investment = 100_000.0D,
-                        PayoutFreequency = PayoutFreequency.Month,
+                        Balance = 100_000.0D,
+                        PayoutFreequency = PayoutFreequencyEnum.Month,
                         Payout = 150.50D,
                         InvestmentLength = 20,
                     };
-                    payoutProduct.Withdrawal = _behaviourFactory.Instance(payoutProduct);
-                    return payoutProduct;
                 default:
-                    modelPortfolio = _modelPortfolioRepository.Get(ProductType.Investment, RiskCategory.Income);
-                    var investmentProduct = new InvestmentProduct(_dateTimeNow)
+                    modelPortfolio = _modelPortfolioRepository.Get(ProductTypeEnum.Investment, RiskCategoryEnum.Income);
+                    return new InvestmentProduct(_dateTimeNow)
                     {
                         ModelPortfolio = modelPortfolio,
                         FinalDerisking = true,
                         AnnualDerisking = true,
                         Investment = 100_000.0D,
+                        Balance = 100_000.0D,
                         InvestmentLength = 20,
                     };
-                    investmentProduct.Withdrawal = _behaviourFactory.Instance(investmentProduct);
-                    return investmentProduct;
             }
         }
     }

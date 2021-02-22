@@ -1,6 +1,6 @@
 ﻿namespace PayoutPlan.Enum
 {
-    public enum PayoutFreequency
+    public enum PayoutFreequencyEnum
     {
         Year = 0,
         Quarter = 1,

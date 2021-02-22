@@ -1,6 +1,6 @@
 ﻿using PayoutPlan.Interfaces.Common;
 
-namespace PayoutPlan.Model
+namespace PayoutPlan.Models
 {
     public class InvestmentProduct : ProductBase
     {

@@ -1,7 +1,8 @@
 ﻿using PayoutPlan.Enum;
+using PayoutPlan.Exceptions;
 using PayoutPlan.Handlers;
 using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Model;
+using PayoutPlan.Models;
 using PayoutPlan.Monitor;
 
 namespace PayoutPlan.Factories
@@ -28,10 +29,12 @@ namespace PayoutPlan.Factories
         {
             switch (productBase.ProductType)
             {
-                case ProductType.Payout:
+                case ProductTypeEnum.Payout:
                     return new PayoutMonitor(_rebalancerHandler, _payoutHandler, productBase, _dateTimeNow);
-                default:
+                case ProductTypeEnum.Investment:
                     return new InvestmentMonitor(_rebalancerHandler, productBase, _dateTimeNow);
+                default:
+                    throw new MonitorNotFoundException();
             }
         }
     }

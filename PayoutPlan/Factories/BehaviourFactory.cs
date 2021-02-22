@@ -1,25 +1,32 @@
 ﻿using PayoutPlan.Behaviours;
 using PayoutPlan.Enum;
+using PayoutPlan.Exceptions;
 using PayoutPlan.Interfaces;
-using PayoutPlan.Model;
+using PayoutPlan.Models;
 
 namespace PayoutPlan.Factories
 {
     public interface IBehaviourFactory
     {
-        IBehaviour Instance(ProductBase productBase);
+        IBehaviour Instance(ProductBase productBase, BehaviourEnum behaviour);
     }
 
     public class BehaviourFactory : IBehaviourFactory
     {
-        public IBehaviour Instance(ProductBase productBase)
+        public IBehaviour Instance(ProductBase productBase, BehaviourEnum behaviour)
         {
-            switch (productBase.ProductType)
+            switch (behaviour)
             {
-                case ProductType.Payout:
+                case BehaviourEnum.Payout:
                     return new PayoutWithdrawalBehaviour(productBase);
+                case BehaviourEnum.FinalRebalancing:
+                    return new FinalRebalancingBehaviour(productBase);
+                case BehaviourEnum.AnnualRebalancing:
+                    return new AnnualRebalanceBehaviour(productBase);
+                case BehaviourEnum.FlexibleAllocationsRebalancing:
+                    return new FlexibleAllocationRebalancingBehaviour(productBase);
                 default:
-                    return new InvestmentWithdrawalBehaviour(productBase);
+                    throw new BehaviourNotFoundException();
             }
         }
     }

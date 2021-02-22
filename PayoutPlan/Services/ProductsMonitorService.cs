@@ -2,7 +2,7 @@
 using PayoutPlan.Factories;
 using PayoutPlan.Handlers;
 using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Model;
+using PayoutPlan.Models;
 using PayoutPlan.Repository;
 using System.Collections.Generic;
 
@@ -29,23 +29,23 @@ namespace PayoutPlan.Services
             _dateTimeNow = dateTimeNow;
             _modelPortfolioRepository = new ModelPortfolioRepository();
             _behaviourFactory = new BehaviourFactory();
-            _productRepository = new ProductRepository(_modelPortfolioRepository, _behaviourFactory, dateTimeNow);
-            _rebalancerHandler = new RebalanceHandler();
-            _payoutHandler = new PayoutHandler();
-            _monitorFactory = new MonitorFactory(dateTimeNow, _rebalancerHandler, _payoutHandler);
+            _productRepository = new ProductRepository(_modelPortfolioRepository, _behaviourFactory, _dateTimeNow);
+            _rebalancerHandler = new RebalanceHandler(_behaviourFactory);
+            _payoutHandler = new PayoutHandler(_behaviourFactory);
+            _monitorFactory = new MonitorFactory(_dateTimeNow, _rebalancerHandler, _payoutHandler);
             _monitorHandler = new MonitorHandler(_monitorFactory);
         }
 
         public void Monitor()
         {
-            var payoutProduct = _productRepository.Get(ProductType.Payout);
+            var payoutProduct = _productRepository.Get(ProductTypeEnum.Payout);
 
-            var investmentProduct = _productRepository.Get(ProductType.Investment);
+            var investmentProduct = _productRepository.Get(ProductTypeEnum.Investment);
 
             var products = new List<ProductBase>()
             {
-                //payoutProduct,
-                investmentProduct
+                payoutProduct,
+                //investmentProduct
             };
 
             var endOfProductLife = _dateTimeNow.Now.AddYears(20);

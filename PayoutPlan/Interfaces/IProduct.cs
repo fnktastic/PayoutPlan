@@ -4,6 +4,6 @@ namespace PayoutPlan.Interfaces
 {
     public interface IProduct
     {
-        ProductType ProductType { get; }
+        ProductTypeEnum ProductType { get; }
     }
 }

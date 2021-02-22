@@ -1,6 +1,6 @@
 ﻿namespace PayoutPlan.Enum
 {
-    public enum ProductType
+    public enum ProductTypeEnum
     {
         Investment = 9,
         Payout = 8

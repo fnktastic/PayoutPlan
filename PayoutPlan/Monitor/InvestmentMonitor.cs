@@ -2,7 +2,7 @@
 using PayoutPlan.Handlers;
 using PayoutPlan.Interfaces;
 using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Model;
+using PayoutPlan.Models;
 
 namespace PayoutPlan.Monitor
 {

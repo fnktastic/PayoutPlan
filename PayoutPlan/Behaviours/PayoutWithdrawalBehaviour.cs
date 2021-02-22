@@ -1,5 +1,6 @@
 ﻿using PayoutPlan.Interfaces;
-using PayoutPlan.Model;
+using PayoutPlan.Models;
+using System;
 
 namespace PayoutPlan.Behaviours
 {
@@ -14,7 +15,12 @@ namespace PayoutPlan.Behaviours
 
         public void Execute()
         {
-            //withrdawal
+            if (_productBase is PayoutProduct payoutProduct)
+            {
+                payoutProduct.Balance -= payoutProduct.Payout;
+
+                Console.WriteLine("{1} | Payout: {0}", payoutProduct.Balance, payoutProduct.DateTimeNow.Now);
+            }
         }
     }
 }

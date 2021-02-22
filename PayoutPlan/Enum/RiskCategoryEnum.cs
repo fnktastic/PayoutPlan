@@ -1,7 +1,7 @@
 ﻿namespace PayoutPlan.Enum
 {
 
-    public enum RiskCategory
+    public enum RiskCategoryEnum
     {
         Security = 1,
         Income = 2,
