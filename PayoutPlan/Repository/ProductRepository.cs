@@ -1,9 +1,9 @@
-﻿using PayoutPlan.Enum;
-using PayoutPlan.Factories;
-using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Models;
+﻿using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceFactories;
+using Qcentris.Monitoring.ServiceInterfaces.Common;
+using Qcentris.Monitoring.ServiceModels;
 
-namespace PayoutPlan.Repository
+namespace Qcentris.Monitoring.ServiceRepository
 {
     public interface IProductRepository
     {

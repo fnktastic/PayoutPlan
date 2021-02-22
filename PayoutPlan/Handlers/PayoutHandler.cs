@@ -1,9 +1,9 @@
-﻿using PayoutPlan.Enum;
-using PayoutPlan.Factories;
-using PayoutPlan.Interfaces;
-using PayoutPlan.Models;
+﻿using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceFactories;
+using Qcentris.Monitoring.ServiceInterfaces;
+using Qcentris.Monitoring.ServiceModels;
 
-namespace PayoutPlan.Handlers
+namespace Qcentris.Monitoring.ServiceHandlers
 {
     public interface IPayoutHandler
     {

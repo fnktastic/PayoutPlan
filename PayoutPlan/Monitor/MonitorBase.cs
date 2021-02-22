@@ -1,7 +1,7 @@
-﻿using PayoutPlan.Interfaces;
-using PayoutPlan.Interfaces.Common;
+﻿using Qcentris.Monitoring.ServiceInterfaces;
+using Qcentris.Monitoring.ServiceInterfaces.Common;
 
-namespace PayoutPlan.Monitor
+namespace Qcentris.Monitoring.ServiceMonitor
 {
     public interface IMonitor
     {

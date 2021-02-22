@@ -1,9 +1,9 @@
-﻿using PayoutPlan.Enum;
-using PayoutPlan.Extensions;
-using PayoutPlan.Models;
+﻿using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceExtensions;
+using Qcentris.Monitoring.ServiceModels;
 using System.Collections.Generic;
 
-namespace PayoutPlan.Repository
+namespace Qcentris.Monitoring.ServiceRepository
 {
     public interface IModelPortfolioRepository
     {

@@ -1,8 +1,8 @@
-﻿using PayoutPlan.Factories;
-using PayoutPlan.Models;
+﻿using Qcentris.Monitoring.ServiceFactories;
+using Qcentris.Monitoring.ServiceModels;
 using System.Collections.Generic;
 
-namespace PayoutPlan.Handlers
+namespace Qcentris.Monitoring.ServiceHandlers
 {
     public interface IMonitorHandler
     {

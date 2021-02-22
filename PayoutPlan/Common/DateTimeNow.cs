@@ -1,7 +1,7 @@
-﻿using PayoutPlan.Interfaces.Common;
+﻿using Qcentris.Monitoring.ServiceInterfaces.Common;
 using System;
 
-namespace PayoutPlan.Common
+namespace Qcentris.Monitoring.ServiceCommon
 {
     public class DateTimeNow : IDateTimeNow
     {

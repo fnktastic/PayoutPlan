@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PayoutPlan.Interfaces.Common
+namespace Qcentris.Monitoring.ServiceInterfaces.Common
 {
     public interface IDateTimeNow
     {

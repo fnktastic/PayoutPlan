@@ -1,6 +1,6 @@
-﻿using PayoutPlan.Common;
-using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Services;
+﻿using Qcentris.Monitoring.ServiceCommon;
+using Qcentris.Monitoring.ServiceInterfaces.Common;
+using Qcentris.Monitoring.ServiceServices;
 using System;
 
 namespace PayoutPlan

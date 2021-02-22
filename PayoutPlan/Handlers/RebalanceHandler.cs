@@ -1,8 +1,9 @@
-﻿using PayoutPlan.Factories;
-using PayoutPlan.Interfaces;
-using PayoutPlan.Models;
+﻿using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceFactories;
+using Qcentris.Monitoring.ServiceInterfaces;
+using Qcentris.Monitoring.ServiceModels;
 
-namespace PayoutPlan.Handlers
+namespace Qcentris.Monitoring.ServiceHandlers
 {
     public interface IRebalanceHandler
     {
@@ -22,17 +23,17 @@ namespace PayoutPlan.Handlers
         {
             if (monitor.IsAnnualRebalancingTriggered)
             {
-                _behaviourFactory.Create(product, Enum.BehaviourEnum.AnnualRebalancing).Execute();
+                _behaviourFactory.Create(product, BehaviourEnum.AnnualRebalancing).Execute();
             }
 
             if (monitor.IsFinalRebalancingTriggered)
             {
-                _behaviourFactory.Create(product, Enum.BehaviourEnum.FinalRebalancing).Execute();
+                _behaviourFactory.Create(product, BehaviourEnum.FinalRebalancing).Execute();
             }
 
             if (monitor.IsFlexibleAllocationRebalancingTriggered)
             {
-                _behaviourFactory.Create(product, Enum.BehaviourEnum.FlexibleAllocationsRebalancing).Execute();
+                _behaviourFactory.Create(product, BehaviourEnum.FlexibleAllocationsRebalancing).Execute();
             }
         }
     }

@@ -1,12 +1,12 @@
-﻿using PayoutPlan.Enum;
-using PayoutPlan.Factories;
-using PayoutPlan.Handlers;
-using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Models;
-using PayoutPlan.Repository;
+﻿using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceFactories;
+using Qcentris.Monitoring.ServiceHandlers;
+using Qcentris.Monitoring.ServiceInterfaces.Common;
+using Qcentris.Monitoring.ServiceModels;
+using Qcentris.Monitoring.ServiceRepository;
 using System.Collections.Generic;
 
-namespace PayoutPlan.Services
+namespace Qcentris.Monitoring.ServiceServices
 {
     public interface IProductsMonitorService
     {

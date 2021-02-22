@@ -1,4 +1,4 @@
-﻿namespace PayoutPlan.Extensions
+﻿namespace Qcentris.Monitoring.ServiceExtensions
 {
     public static class ObjectExtensions
     {

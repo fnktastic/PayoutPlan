@@ -1,10 +1,10 @@
-﻿using PayoutPlan.Extensions;
-using PayoutPlan.Handlers;
-using PayoutPlan.Interfaces;
-using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Models;
+﻿using Qcentris.Monitoring.ServiceExtensions;
+using Qcentris.Monitoring.ServiceHandlers;
+using Qcentris.Monitoring.ServiceInterfaces;
+using Qcentris.Monitoring.ServiceInterfaces.Common;
+using Qcentris.Monitoring.ServiceModels;
 
-namespace PayoutPlan.Monitor
+namespace Qcentris.Monitoring.ServiceMonitor
 {
     public class InvestmentMonitor : MonitorBase, IRabalanceMonitor
     {

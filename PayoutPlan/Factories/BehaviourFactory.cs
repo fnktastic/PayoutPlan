@@ -1,10 +1,10 @@
-﻿using PayoutPlan.Behaviours;
-using PayoutPlan.Enum;
-using PayoutPlan.Exceptions;
-using PayoutPlan.Interfaces;
-using PayoutPlan.Models;
+﻿using Qcentris.Monitoring.ServiceBehaviours;
+using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceExceptions;
+using Qcentris.Monitoring.ServiceInterfaces;
+using Qcentris.Monitoring.ServiceModels;
 
-namespace PayoutPlan.Factories
+namespace Qcentris.Monitoring.ServiceFactories
 {
     public interface IBehaviourFactory
     {

@@ -1,4 +1,4 @@
-﻿namespace PayoutPlan.Enum
+﻿namespace Qcentris.Monitoring.ServiceEnum
 {
 
     public enum RiskCategoryEnum

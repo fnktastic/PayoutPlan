@@ -1,6 +1,6 @@
-﻿using PayoutPlan.Interfaces.Common;
+﻿using Qcentris.Monitoring.ServiceInterfaces.Common;
 
-namespace PayoutPlan.Models
+namespace Qcentris.Monitoring.ServiceModels
 {
     public class InvestmentProduct : ProductBase
     {

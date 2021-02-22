@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PayoutPlan.Exceptions
+namespace Qcentris.Monitoring.ServiceExceptions
 {
     public class PayoutFreequencyNotFoundException : Exception
     {

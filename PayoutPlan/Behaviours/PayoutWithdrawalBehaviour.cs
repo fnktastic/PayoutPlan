@@ -1,8 +1,8 @@
-﻿using PayoutPlan.Interfaces;
-using PayoutPlan.Models;
+﻿using Qcentris.Monitoring.ServiceInterfaces;
+using Qcentris.Monitoring.ServiceModels;
 using System;
 
-namespace PayoutPlan.Behaviours
+namespace Qcentris.Monitoring.ServiceBehaviours
 {
     public class PayoutWithdrawalBehaviour : IBehaviour
     {

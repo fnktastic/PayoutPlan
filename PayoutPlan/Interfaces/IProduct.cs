@@ -1,6 +1,6 @@
-﻿using PayoutPlan.Enum;
+﻿using Qcentris.Monitoring.ServiceEnum;
 
-namespace PayoutPlan.Interfaces
+namespace Qcentris.Monitoring.ServiceInterfaces
 {
     public interface IProduct
     {

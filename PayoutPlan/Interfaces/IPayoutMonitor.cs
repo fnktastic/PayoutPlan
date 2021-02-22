@@ -1,4 +1,4 @@
-﻿namespace PayoutPlan.Interfaces
+﻿namespace Qcentris.Monitoring.ServiceInterfaces
 {
     public interface IPayoutMonitor
     {

@@ -1,8 +1,8 @@
-﻿using PayoutPlan.Enum;
-using PayoutPlan.Interfaces.Common;
+﻿using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceInterfaces.Common;
 using System;
 
-namespace PayoutPlan.Models
+namespace Qcentris.Monitoring.ServiceModels
 {
     public interface IPayoutable
     {

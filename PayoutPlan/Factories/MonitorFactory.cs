@@ -1,11 +1,11 @@
-﻿using PayoutPlan.Enum;
-using PayoutPlan.Exceptions;
-using PayoutPlan.Handlers;
-using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Models;
-using PayoutPlan.Monitor;
+﻿using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceExceptions;
+using Qcentris.Monitoring.ServiceHandlers;
+using Qcentris.Monitoring.ServiceInterfaces.Common;
+using Qcentris.Monitoring.ServiceModels;
+using Qcentris.Monitoring.ServiceMonitor;
 
-namespace PayoutPlan.Factories
+namespace Qcentris.Monitoring.ServiceFactories
 {
     public interface IMonitorFactory
     {

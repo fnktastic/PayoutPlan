@@ -1,9 +1,9 @@
-﻿using PayoutPlan.Enum;
-using PayoutPlan.Exceptions;
-using PayoutPlan.Interfaces.Common;
-using PayoutPlan.Models;
+﻿using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceExceptions;
+using Qcentris.Monitoring.ServiceInterfaces.Common;
+using Qcentris.Monitoring.ServiceModels;
 
-namespace PayoutPlan.Extensions
+namespace Qcentris.Monitoring.ServiceExtensions
 {
     public static class PayoutExtensions
     {

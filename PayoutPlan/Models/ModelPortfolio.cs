@@ -1,6 +1,6 @@
-﻿using PayoutPlan.Enum;
+﻿using Qcentris.Monitoring.ServiceEnum;
 
-namespace PayoutPlan.Models
+namespace Qcentris.Monitoring.ServiceModels
 {
     public interface IModelPortfolio
     {
