@@ -1,10 +1,7 @@
 ﻿using PayoutPlan.Enum;
-using PayoutPlan.Extensions;
-using PayoutPlan.Factories;
 using PayoutPlan.Interfaces;
 using PayoutPlan.Interfaces.Common;
 using System;
-using System.Collections.Generic;
 
 namespace PayoutPlan.Model
 {

@@ -1,11 +1,7 @@
 ﻿using PayoutPlan.Enum;
 using PayoutPlan.Extensions;
 using PayoutPlan.Model;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PayoutPlan.Repository
 {
@@ -36,11 +32,11 @@ namespace PayoutPlan.Repository
 
         public List<IModelPortfolio> Get(ProductType productType)
         {
-            switch(productType)
+            switch (productType)
             {
-                case ProductType.Payout: 
+                case ProductType.Payout:
                     return _payoutPortfolios;
-                default: 
+                default:
                     return _investmentPortfolios;
             }
         }
@@ -49,9 +45,9 @@ namespace PayoutPlan.Repository
         {
             switch (productType)
             {
-                case ProductType.Payout: 
+                case ProductType.Payout:
                     return _payoutPortfolios.Find(x => x.RiskCategory == riskCategory).Clone();
-                default: 
+                default:
                     return _investmentPortfolios.Find(x => x.RiskCategory == riskCategory).Clone();
             }
         }

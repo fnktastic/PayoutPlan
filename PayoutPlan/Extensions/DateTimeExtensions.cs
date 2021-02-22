@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PayoutPlan.Extensions
 {
@@ -39,7 +35,7 @@ namespace PayoutPlan.Extensions
                 if (now.Month == 3 ||
                     now.Month == 6 ||
                     now.Month == 9 ||
-                    now.Month == 12) 
+                    now.Month == 12)
                     return true;
             }
 

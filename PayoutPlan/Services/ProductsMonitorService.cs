@@ -56,7 +56,7 @@ namespace PayoutPlan.Services
 
                 _dateTimeNow.AddDay(); // imitate next day
             }
-            
+
         }
     }
 }
