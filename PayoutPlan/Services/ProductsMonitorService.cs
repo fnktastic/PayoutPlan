@@ -1,4 +1,8 @@
-﻿using PayoutPlan.Model;
+﻿using PayoutPlan.Enum;
+using PayoutPlan.Factories;
+using PayoutPlan.Handlers;
+using PayoutPlan.Interfaces.Common;
+using PayoutPlan.Model;
 using PayoutPlan.Repository;
 using System.Collections.Generic;
 
@@ -18,12 +22,14 @@ namespace PayoutPlan.Services
         private readonly IPayoutHandler _payoutHandler;
         private readonly IMonitorFactory _monitorFactory;
         private readonly IMonitorHandler _monitorHandler;
+        private readonly IBehaviourFactory _behaviourFactory;
 
         public ProductsMonitorService(IDateTimeNow dateTimeNow)
         {
             _dateTimeNow = dateTimeNow;
             _modelPortfolioRepository = new ModelPortfolioRepository();
-            _productRepository = new ProductRepository(_modelPortfolioRepository, dateTimeNow);
+            _behaviourFactory = new BehaviourFactory();
+            _productRepository = new ProductRepository(_modelPortfolioRepository, _behaviourFactory, dateTimeNow);
             _rebalancerHandler = new RebalanceHandler();
             _payoutHandler = new PayoutHandler();
             _monitorFactory = new MonitorFactory(dateTimeNow, _rebalancerHandler, _payoutHandler);

@@ -43,10 +43,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Behaviours\InvestmentWithdrawalBehaviour.cs" />
+    <Compile Include="Behaviours\PayoutWithdrawalBehaviour.cs" />
+    <Compile Include="Common\DateTimeNow.cs" />
+    <Compile Include="Enum\RiskCategory.cs" />
+    <Compile Include="Enum\PayoutFreequency.cs" />
+    <Compile Include="Enum\ProductType.cs" />
     <Compile Include="Extensions\DateTimeExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\PayoutExtensions.cs" />
+    <Compile Include="Factories\BehaviourFactory.cs" />
+    <Compile Include="Factories\MonitorFactory.cs" />
+    <Compile Include="Handlers\MonitorHandler.cs" />
+    <Compile Include="Handlers\PayoutHandler.cs" />
+    <Compile Include="Handlers\RebalanceHandler.cs" />
+    <Compile Include="Interfaces\Common\IDateTimeNow.cs" />
+    <Compile Include="Interfaces\IBehaviour.cs" />
+    <Compile Include="Interfaces\IPayoutMonitor.cs" />
+    <Compile Include="Interfaces\IProduct.cs" />
+    <Compile Include="Interfaces\IRabalanceMonitor.cs" />
+    <Compile Include="Model\InvestmentProduct.cs" />
+    <Compile Include="Model\ModelPortfolio.cs" />
+    <Compile Include="Model\PayoutProduct.cs" />
     <Compile Include="Model\ProductBase.cs" />
+    <Compile Include="Monitor\InvestmentMonitor.cs" />
+    <Compile Include="Monitor\MonitorBase.cs" />
+    <Compile Include="Monitor\PayoutMonitor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repository\ModelPortfolioRepository.cs" />
@@ -56,5 +78,6 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

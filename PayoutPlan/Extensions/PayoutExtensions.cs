@@ -1,4 +1,6 @@
-﻿using PayoutPlan.Model;
+﻿using PayoutPlan.Enum;
+using PayoutPlan.Interfaces.Common;
+using PayoutPlan.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,7 @@ namespace PayoutPlan.Extensions
 {
     public static class PayoutExtensions
     {
-        public static bool IsPayoutTriggered(this IPayoutable payoutable, IDateTimeNow dateTimeNow)
+        public static bool IsPayoutTriggered(this IPayout payoutable, IDateTimeNow dateTimeNow)
         {
             if (payoutable.Created.IsDateAs(dateTimeNow.Now)) return false;
 

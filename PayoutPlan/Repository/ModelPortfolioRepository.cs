@@ -1,4 +1,5 @@
-﻿using PayoutPlan.Extensions;
+﻿using PayoutPlan.Enum;
+using PayoutPlan.Extensions;
 using PayoutPlan.Model;
 using System;
 using System.Collections.Generic;
