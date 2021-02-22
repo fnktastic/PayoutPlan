@@ -21,7 +21,7 @@ namespace PayoutPlan.Handlers
         {
             foreach (var productBase in productsBase)
             {
-                _monitorFactory.Instance(productBase).Invoke();
+                _monitorFactory.Create(productBase).Invoke();
             }
         }
     }

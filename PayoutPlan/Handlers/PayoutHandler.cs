@@ -23,7 +23,7 @@ namespace PayoutPlan.Handlers
         {
             if (monitor.IsPayoutTriggered)
             {
-                _behaviourFactory.Instance(product, BehaviourEnum.Payout).Execute();
+                _behaviourFactory.Create(product, BehaviourEnum.Payout).Execute();
             }
         }
     }

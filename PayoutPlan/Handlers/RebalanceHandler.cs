@@ -22,17 +22,17 @@ namespace PayoutPlan.Handlers
         {
             if (monitor.IsAnnualRebalancingTriggered)
             {
-                _behaviourFactory.Instance(product, Enum.BehaviourEnum.AnnualRebalancing).Execute();
+                _behaviourFactory.Create(product, Enum.BehaviourEnum.AnnualRebalancing).Execute();
             }
 
             if (monitor.IsFinalRebalancingTriggered)
             {
-                _behaviourFactory.Instance(product, Enum.BehaviourEnum.FinalRebalancing).Execute();
+                _behaviourFactory.Create(product, Enum.BehaviourEnum.FinalRebalancing).Execute();
             }
 
             if (monitor.IsFlexibleAllocationRebalancingTriggered)
             {
-                _behaviourFactory.Instance(product, Enum.BehaviourEnum.FlexibleAllocationsRebalancing).Execute();
+                _behaviourFactory.Create(product, Enum.BehaviourEnum.FlexibleAllocationsRebalancing).Execute();
             }
         }
     }

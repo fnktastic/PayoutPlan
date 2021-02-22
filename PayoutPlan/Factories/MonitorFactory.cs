@@ -9,7 +9,7 @@ namespace PayoutPlan.Factories
 {
     public interface IMonitorFactory
     {
-        IMonitor Instance(ProductBase productBase);
+        IMonitor Create(ProductBase productBase);
     }
 
     public class MonitorFactory : IMonitorFactory
@@ -25,7 +25,7 @@ namespace PayoutPlan.Factories
             _payoutHandler = payoutHandler;
         }
 
-        public IMonitor Instance(ProductBase productBase)
+        public IMonitor Create(ProductBase productBase)
         {
             switch (productBase.ProductType)
             {

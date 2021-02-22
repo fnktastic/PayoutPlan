@@ -8,12 +8,12 @@ namespace PayoutPlan.Factories
 {
     public interface IBehaviourFactory
     {
-        IBehaviour Instance(ProductBase productBase, BehaviourEnum behaviour);
+        IBehaviour Create(ProductBase productBase, BehaviourEnum behaviour);
     }
 
     public class BehaviourFactory : IBehaviourFactory
     {
-        public IBehaviour Instance(ProductBase productBase, BehaviourEnum behaviour)
+        public IBehaviour Create(ProductBase productBase, BehaviourEnum behaviour)
         {
             switch (behaviour)
             {
