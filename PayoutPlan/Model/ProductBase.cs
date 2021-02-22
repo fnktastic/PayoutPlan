@@ -18,16 +18,19 @@ namespace PayoutPlan.Model
         DateTime Now { get; }
     }
 
-
-    public abstract class MonitorBase
+    public interface IMonitor
     {
-        protected readonly ProductBase _productBase;
+        void Invoke();
+    }
+
+    public abstract class MonitorBase : IMonitor
+    {
+        protected readonly IProduct _productBase;
 
         protected readonly IDateTimeNow _dateTime;
-        protected IModelPortfolio _modelPortfolio => _productBase.ModelPortfolio;
-        protected ProductBase ProductBase => _productBase;
+        protected IProduct ProductBase => _productBase;
 
-        public MonitorBase(ProductBase productBase, IDateTimeNow dateTime)
+        public MonitorBase(IProduct productBase, IDateTimeNow dateTime)
         {
             _productBase = productBase;
             _dateTime = dateTime;
@@ -59,8 +62,8 @@ namespace PayoutPlan.Model
 
         public InvestmentProduct Product => (InvestmentProduct)_productBase;
         public bool IsFlexibleAllocationRebalancingTriggered => false;
-        public bool IsFinalRebalancingTriggered => _productBase.LastTwoYearsPeriod && _productBase.FinalDerisking && _dateTime.Now.IsLastTuesdayInMonth() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
-        public bool IsAnnualRebalancingTriggered => _productBase.AnnualDerisking && _dateTime.Now.IsLastDayInYear() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
+        public bool IsFinalRebalancingTriggered => Product.LastTwoYearsPeriod && Product.FinalDerisking && _dateTime.Now.IsLastTuesdayInMonth() && Product.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
+        public bool IsAnnualRebalancingTriggered => Product.AnnualDerisking && _dateTime.Now.IsLastDayInYear() && Product.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
 
         public override void Invoke()
         {
@@ -81,9 +84,9 @@ namespace PayoutPlan.Model
             _payoutHandler = payoutHandler;
         }
         public PayoutProduct Product => (PayoutProduct)_productBase;
-        public bool IsFlexibleAllocationRebalancingTriggered => _dateTime.Now.IsLastTuesdayInMonth() && _modelPortfolio.Dynamic >= _modelPortfolio.RebalancingTreshold;
-        public bool IsFinalRebalancingTriggered => _productBase.LastTwoYearsPeriod && _dateTime.Now.IsLastTuesdayInMonth() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
-        public bool IsAnnualRebalancingTriggered => _productBase.AnnualDerisking && _dateTime.Now.IsLastDayInYear() && _productBase.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
+        public bool IsFlexibleAllocationRebalancingTriggered => _dateTime.Now.IsLastTuesdayInMonth() && Product.ModelPortfolio.Dynamic >= Product.ModelPortfolio.RebalancingTreshold;
+        public bool IsFinalRebalancingTriggered => Product.LastTwoYearsPeriod && _dateTime.Now.IsLastTuesdayInMonth() && Product.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
+        public bool IsAnnualRebalancingTriggered => Product.AnnualDerisking && _dateTime.Now.IsLastDayInYear() && Product.ModelPortfolio.Defensive < REBALANCING_TRESHOLD;
         public bool IsPayoutTriggered => Product.IsPayoutTriggered(_dateTime);
 
         public override void Invoke()
@@ -172,7 +175,12 @@ namespace PayoutPlan.Model
         }
     }
 
-    public abstract class ProductBase
+    public interface IProduct
+    {
+        ProductType ProductType { get; }
+    }
+
+    public abstract class ProductBase : IProduct
     {
         private readonly IDateTimeNow _dateTimeNow;
         public ProductBase(IDateTimeNow dateTimeNow)
@@ -190,7 +198,7 @@ namespace PayoutPlan.Model
         public DateTime Created { get; protected set; }
         public IModelPortfolio ModelPortfolio { get; protected set; }
         public int InvestmentYear => _dateTimeNow.Now.Year - Created.Year;
-        public bool LastTwoYearsPeriod => (InvestmentLength - InvestmentYear) <= 2 ? true : false;
+        public bool LastTwoYearsPeriod => (InvestmentLength - InvestmentYear) <= 2;
         public IDateTimeNow DateTimeNow => _dateTimeNow;
         public abstract void Withdraw(double? amount = null);
     }
@@ -291,9 +299,7 @@ namespace PayoutPlan.Model
         {
             foreach(var productBase in productsBase)
             {
-                var monitor = _monitorFactory.Instance(productBase);
-
-                monitor.Invoke();
+                 _monitorFactory.Instance(productBase).Invoke();
             }
         }
     }
@@ -320,7 +326,7 @@ namespace PayoutPlan.Model
 
     public interface IMonitorFactory
     {
-        MonitorBase Instance(ProductBase productBase);
+        IMonitor Instance(ProductBase productBase);
     }
 
     public class MonitorFactory : IMonitorFactory
@@ -336,7 +342,7 @@ namespace PayoutPlan.Model
             _payoutHandler = payoutHandler;
         }
 
-        public MonitorBase Instance(ProductBase productBase)
+        public IMonitor Instance(ProductBase productBase)
         {
             switch (productBase.ProductType)
             {
