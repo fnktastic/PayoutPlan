@@ -22,8 +22,4 @@ namespace Qcentris.Monitoring.ServiceMonitor
         }
         public abstract void Invoke();
     }
-
-
-
-
 }
