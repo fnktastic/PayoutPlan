@@ -1,4 +1,5 @@
-﻿using Qcentris.Monitoring.ServiceInterfaces.Common;
+﻿using Qcentris.Monitoring.ServiceEnum;
+using Qcentris.Monitoring.ServiceInterfaces.Common;
 
 namespace Qcentris.Monitoring.ServiceModels
 {
@@ -6,7 +7,7 @@ namespace Qcentris.Monitoring.ServiceModels
     {
         public InvestmentProduct(IDateTimeNow dateTimeNow) : base(dateTimeNow)
         {
-
+            ProductType = ProductTypeEnum.Investment;
         }
     }
 }

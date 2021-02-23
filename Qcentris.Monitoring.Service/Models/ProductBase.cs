@@ -14,7 +14,7 @@ namespace Qcentris.Monitoring.ServiceModels
             _dateTimeNow = dateTimeNow;
         }
 
-        public ProductTypeEnum ProductType { get; set; }
+        public ProductTypeEnum ProductType { get; protected set; }
         public double Investment { get; set; }
         public bool FinalDerisking { get; set; }
         public bool AnnualDerisking { get; set; }
