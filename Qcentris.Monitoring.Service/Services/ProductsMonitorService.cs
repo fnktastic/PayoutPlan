@@ -45,7 +45,7 @@ namespace Qcentris.Monitoring.ServiceServices
             var products = new List<ProductBase>()
             {
                 payoutProduct,
-                //investmentProduct
+                investmentProduct
             };
 
             var endOfProductLife = _dateTimeNow.Now.AddYears(20);
